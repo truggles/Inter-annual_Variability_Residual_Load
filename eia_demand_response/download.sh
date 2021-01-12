@@ -18,3 +18,4 @@ done
 mkdir -p data/all_DR
 mv data/*/Demand* data/all_DR
 mv data/*/DSM* data/all_DR
+mv data/*/dsm* data/all_DR
