@@ -10,3 +10,7 @@ See: https://www.eia.gov/electricity/data/eia861/
 # Utility to BA mapping
 
 From 2013 onwards, `Sales_Ult_Cust_2019.xlsx` provides a mapping of utility to BA. This is need b/c the hourly data is per BA.
+
+# EIA Demand Response of peak load post
+
+https://www.eia.gov/todayinenergy/detail.php?id=38872
