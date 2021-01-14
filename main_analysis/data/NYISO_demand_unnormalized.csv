@@ -1,8 +1,3 @@
-Demand data gathered by Tyler Ruggles from NYISO database,,,,
-,,,,
-Lines above 'BEGIN_DATA' in the first column are for comment only.,,,,
-,,,,
-BEGIN_DATA,,,,
 year,month,day,hour,demand (MW)
 2004,1,1,1,18670.0
 2004,1,1,2,17891.0
