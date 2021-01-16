@@ -31,11 +31,12 @@ def get_peak_demand_hour_indices(df):
 
 
 
-def get_dem_wind_solar(im):
+def get_dem_wind_solar(im, use_TMY=False):
 
+    rep = '.csv' if not use_TMY else '_TMY.csv' # if wanting TMY, this will change the file name
     demand = pd.read_csv('../'+im['demand'][0], header=im['demand'][1])
-    wind = pd.read_csv('../'+im['wind'][0], header=im['wind'][1])
-    solar = pd.read_csv('../'+im['solar'][0], header=im['solar'][1])
+    wind = pd.read_csv('../'+im['wind'][0].replace('.csv', rep), header=im['wind'][1])
+    solar = pd.read_csv('../'+im['solar'][0].replace('.csv', rep), header=im['solar'][1])
 
     return demand, wind, solar
 
@@ -218,8 +219,7 @@ def get_annual_df(region, year, df, tgt, im):
     return df2
 
 
-# demand_threshold is in percent
-def return_ordered_df(demand, wind, solar, im, demand_threshold):
+def return_ordered_df(demand, wind, solar, im):
 
     #rank_mthd='ordinal'
     rank_mthd='min'
@@ -230,23 +230,6 @@ def return_ordered_df(demand, wind, solar, im, demand_threshold):
     to_map['demand'] = demand[im['demand'][2]].values
     to_map['wind'] = wind[im['wind'][2]].values
     to_map['solar'] = solar[im['solar'][2]].values
-
-    df = pd.DataFrame(to_map)
-    return df
-
-
-# demand_threshold is in percent
-def return_ordered_df_TMY(demand, wind, solar, im, demand_threshold):
-
-    #rank_mthd='ordinal'
-    rank_mthd='min'
-    to_map = OrderedDict()
-    to_map['month'] = demand['month'].values
-    to_map['day'] = demand['day'].values
-    to_map['hour'] = demand['hour'].values
-    to_map['demand'] = demand[im['demand'][2]].values
-    to_map['wind'] = wind['AVERAGE'].values
-    to_map['solar'] = solar['AVERAGE'].values
 
     df = pd.DataFrame(to_map)
     return df
@@ -638,8 +621,6 @@ print(f"Region: {region}")
 print(f"Peak Hours: {HOURS_PER_YEAR}")
 print(f"Test Sensitivity: {TEST_SENSITIVITY}")
 
-im = return_file_info_map(region)
-demand, wind, solar = get_dem_wind_solar(im)
 
 
 ### HERE
@@ -648,6 +629,7 @@ TYPE = 'png'
 #TYPE = 'pdf'
 
 use_TMY = False
+use_TMY = True
 
 test_ordering = True
 #test_ordering = False
@@ -670,67 +652,27 @@ wind_gen_steps = np.linspace(0, wind_max, steps)
 print("Wind gen increments:", wind_gen_steps)
 print("Solar gen increments:", solar_gen_steps)
 
-plot_base = f'plots/plots_{DATE}_{steps}x{steps}_{region}_hrs{HOURS_PER_YEAR}'
+app = '' if not use_TMY else '_TMY'
+plot_base = f'plots/plots_{DATE}_{steps}x{steps}_{region}_hrs{HOURS_PER_YEAR}{app}'
 if not os.path.exists(plot_base):
     os.makedirs(plot_base)
 
-pkl_file = f'pkls/pkl_{DATE}_{steps}x{steps}_{region}_hrs{HOURS_PER_YEAR}'
+pkl_file = f'pkls/pkl_{DATE}_{steps}x{steps}_{region}_hrs{HOURS_PER_YEAR}{app}'
 
+im = return_file_info_map(region)
 if test_ordering:
+    demand, wind, solar = get_dem_wind_solar(im, use_TMY)
     dfs = OrderedDict()
     peak_indices = {}
     years = im['years']
     print(f"Number of years scanned: {len(years)}")
     #years = [y for y in range(2005, 2009)]
 
-    if use_TMY:
-        import calendar
-        wind_tmy = pd.DataFrame({'idx' : range(8760)})
-        wind_tot = np.zeros(8760)
-        wind_tmy_ly = pd.DataFrame({'idx' : range(8784)})
-        wind_tot_ly = np.zeros(8784)
-        solar_tmy = pd.DataFrame({'idx' : range(8760)})
-        solar_tot = np.zeros(8760)
-        solar_tmy_ly = pd.DataFrame({'idx' : range(8784)})
-        solar_tot_ly = np.zeros(8784)
-        n_years = 0
-        n_years_ly = 0
-        for year in years:
-            tmp_w = wind[ (wind['year'] == year) ]
-            tmp_s = solar[ (solar['year'] == year) ]
-            if calendar.isleap(year):
-                wind_tmy_ly[f'yr_{str(year)}'] = tmp_w['w_cfs'].values
-                wind_tot_ly += wind_tmy_ly[f'yr_{str(year)}']
-                solar_tmy_ly[f'yr_{str(year)}'] = tmp_s['s_cfs'].values
-                solar_tot_ly += solar_tmy_ly[f'yr_{str(year)}']
-                n_years_ly += 1
-            else:
-                wind_tmy[f'yr_{str(year)}'] = tmp_w['w_cfs'].values
-                wind_tot += wind_tmy[f'yr_{str(year)}']
-                solar_tmy[f'yr_{str(year)}'] = tmp_s['s_cfs'].values
-                solar_tot += solar_tmy[f'yr_{str(year)}']
-                n_years += 1
-
-        wind_tmy['AVERAGE'] = wind_tot/n_years
-        wind_tmy.to_csv('wind_tmy.csv')
-        wind_tmy_ly['AVERAGE'] = wind_tot_ly/n_years_ly
-        wind_tmy_ly.to_csv('wind_tmy_ly.csv')
-        solar_tmy['AVERAGE'] = solar_tot/n_years
-        solar_tmy.to_csv('solar_tmy.csv')
-        solar_tmy_ly['AVERAGE'] = solar_tot_ly/n_years_ly
-        solar_tmy_ly.to_csv('solar_tmy_ly.csv')
-
     for year in years:
         d_yr = get_annual_df(region, year, demand, 'demand', im)
         w_yr = get_annual_df(region, year, wind, 'wind', im)
         s_yr = get_annual_df(region, year, solar, 'solar', im)
-        if use_TMY:
-            if calendar.isleap(year):
-                dfs[year] = return_ordered_df_TMY(d_yr, wind_tmy_ly, solar_tmy_ly, im, 100)
-            else:
-                dfs[year] = return_ordered_df_TMY(d_yr, wind_tmy, solar_tmy, im, 100)
-        if not use_TMY: # normal
-            dfs[year] = return_ordered_df(d_yr, w_yr, s_yr, im, 100)
+        dfs[year] = return_ordered_df(d_yr, w_yr, s_yr, im)
         peak_indices[year] = get_peak_demand_hour_indices(dfs[year])
 
     avg_wind_CF = get_avg_CF(dfs, 'wind', im)
