@@ -631,6 +631,9 @@ TYPE = 'png'
 use_TMY = False
 use_TMY = True
 
+if use_TMY:
+    print("You must first create the TMY files with 'prep_TMY_wind_and_solar_profiles.ipynb'")
+
 test_ordering = True
 #test_ordering = False
 make_plots = True
@@ -695,7 +698,6 @@ if test_ordering:
         mapper[str(round(solar_gen,2))] = OrderedDict()
     cnt = 0
     rl_cnt = 0
-    ofile = open(f'{region}_Results2.txt','w')
     for j, wind_install_cap in enumerate(wind_cap_steps):
         wind_gen = wind_gen_steps[j]
         print(f"Wind cap {wind_install_cap}, wind gen {wind_gen}")
@@ -737,9 +739,6 @@ if test_ordering:
                         length = 1
                         prev = val
                 cnts.append(length)
-                txt2 = ','.join([str(v) for v in vals])
-                txt3 = ','.join([str(v) for v in cnts])
-                ofile.write(f"i,{i},j,{j},{txt2},,,{txt3}")
                 #if i%2!=0 or j%2!=0:
                 #    continue
                 rl_cnt += 1
@@ -760,7 +759,6 @@ if test_ordering:
             #    make_box_plots(dfs, f'ordering_{region}', wind_install_cap, solar_install_cap, box_thresholds, cnt, plot_base, [wind_gen, solar_gen])
 
 
-    ofile.close()
 
     #print("Solar Wind max_range 100th_range")
     #for solar, info in mapper.items():
