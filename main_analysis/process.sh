@@ -7,9 +7,9 @@
 #for REGION in "ERCOT" "NYISO" "PJM"; do
 #for REGION in "PJM"; do
 #for REGION in "FR"; do
-#for REGION in "ERCOT" "NYISO" "PJM" "FR"; do
-for REGION in "PJM"; do
-    python run_main_analysis.py $REGION 20
+#for REGION in "PJM"; do
+for REGION in "ERCOT" "NYISO" "PJM" "FR"; do
+    python run_main_analysis.py $REGION &
 done
 
 
