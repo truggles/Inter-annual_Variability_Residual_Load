@@ -14,6 +14,7 @@ from glob import glob
 import os
 from shutil import copy2
 import copy
+import calendar
 
 sys.path.append("/home/truggles/Inter-annual_Variability_Residual_Load")
 from helpers import return_file_info_map
@@ -33,7 +34,7 @@ def get_peak_demand_hour_indices(df):
 
 def get_dem_wind_solar(im, use_TMY=False):
 
-    rep = '.csv' if not use_TMY else '_TMY.csv' # if wanting TMY, this will change the file name
+    rep = '.csv' if not use_TMY else '_TMY2.csv' # if wanting TMY, this will change the file name
     demand = pd.read_csv('../'+im['demand'][0], header=im['demand'][1])
     wind = pd.read_csv('../'+im['wind'][0].replace('.csv', rep), header=im['wind'][1])
     solar = pd.read_csv('../'+im['solar'][0].replace('.csv', rep), header=im['solar'][1])
@@ -209,13 +210,13 @@ def get_annual_CF(df, name, im, year):
 
 
 
-def get_annual_df(region, year, df, tgt, im):
+def get_annual_df(year, df, tgt, im):
 
-    df2 = df[ df[ im[tgt][3]] == year]
+    df2 = df.loc[ df[ im[tgt][3]] == year ].copy()
 
     # Normalize
     if tgt == 'demand':
-        df2[im[tgt][2]] = df2[im[tgt][2]]/np.mean(df2[im[tgt][2]])
+        df2.loc[:, im[tgt][2]] = df2.loc[:, im[tgt][2]]/np.mean(df2.loc[:, im[tgt][2]])
     return df2
 
 
@@ -628,8 +629,15 @@ print(f"Test Sensitivity: {TEST_SENSITIVITY}")
 TYPE = 'png'
 #TYPE = 'pdf'
 
-use_TMY = False
+# Uses wind and solar profile averaged over many years
 use_TMY = True
+use_TMY = False
+
+# Uses wind and solar profiles from the following year
+use_year_plus_one = True
+use_year_plus_one = False
+
+assert((use_TMY == True and use_year_plus_one == True) == False), "Use one or the other, you set both use_TMY and use_year_plus_one to True"
 
 if use_TMY:
     print("You must first create the TMY files with 'prep_TMY_wind_and_solar_profiles.ipynb'")
@@ -639,7 +647,7 @@ test_ordering = True
 make_plots = True
 #make_plots = False
 
-DATE = '20210115v1'
+DATE = '20210115v3YrPlus1'
 
 # Define scan space by "Total X Generation Potential" instead of installed Cap
 solar_max = 1.
@@ -672,9 +680,30 @@ if test_ordering:
     #years = [y for y in range(2005, 2009)]
 
     for year in years:
-        d_yr = get_annual_df(region, year, demand, 'demand', im)
-        w_yr = get_annual_df(region, year, wind, 'wind', im)
-        s_yr = get_annual_df(region, year, solar, 'solar', im)
+
+        resource_year = year
+        # Use an alternate resource year if this is selected
+        if use_year_plus_one:
+            if calendar.isleap(year):
+                resource_year += 4
+                if resource_year > years[-1]:
+                    resource_year = years[0]
+                    while not calendar.isleap(resource_year):
+                        resource_year += 1
+            else:
+                resource_year += 1
+                if resource_year > years[-1]:
+                    resource_year = years[0]
+                while calendar.isleap(resource_year):
+                    resource_year += 1
+            print(f"Demand year {year}; resource year {resource_year}; Demand is leap {calendar.isleap(year)}")
+
+        d_yr = get_annual_df(year, demand, 'demand', im)
+        w_yr = get_annual_df(resource_year, wind, 'wind', im)
+        s_yr = get_annual_df(resource_year, solar, 'solar', im)
+        d_yr.reset_index()
+        w_yr.reset_index()
+        s_yr.reset_index()
         dfs[year] = return_ordered_df(d_yr, w_yr, s_yr, im)
         peak_indices[year] = get_peak_demand_hour_indices(dfs[year])
 
