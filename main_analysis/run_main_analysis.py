@@ -645,7 +645,7 @@ if use_TMY:
 test_ordering = True
 #test_ordering = False
 make_plots = True
-#make_plots = False
+make_plots = False
 
 DATE = '20210115v3YrPlus1'
 

@@ -8,9 +8,9 @@
 #for REGION in "PJM"; do
 #for REGION in "FR"; do
 #for REGION in "PJM"; do
-for REGION in "ERCOT" "NYISO" "PJM" "FR"; do
-    python run_main_analysis.py $REGION &
-done
+#for REGION in "ERCOT" "NYISO" "PJM" "FR"; do
+#    python run_main_analysis.py $REGION &
+#done
 
 
 #for REGION in "ERCOT" "NYISO" "PJM" "FR"; do
@@ -19,3 +19,8 @@ done
 #    done
 #    sleep 24*13
 #done
+
+#for REGION in "FR"; do
+for REGION in "ERCOT" "NYISO" "PJM" "FR"; do
+    python plotting.py $REGION 20 "comp_methods"
+done
