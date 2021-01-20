@@ -608,17 +608,33 @@ print(f"Input arg list {sys.argv}")
 if len(sys.argv) > 1:
     region = sys.argv[1]
 
+
 if len(sys.argv) > 2:
-    HOURS_PER_YEAR = int(sys.argv[2])
+    DATE = sys.argv[2]
+else:
+    DATE = '20210115v1'
+
+
+if len(sys.argv) > 3:
+    METHOD = sys.argv[3]
+else:
+    METHOD = 20
+
+
+if len(sys.argv) > 4:
+    HOURS_PER_YEAR = int(sys.argv[4])
 else:
     HOURS_PER_YEAR = 20
 
-if len(sys.argv) > 3:
+
+if len(sys.argv) > 5:
     TEST_SENSITIVITY = True
 else:
     TEST_SENSITIVITY = False
 
 print(f"Region: {region}")
+print(f"Date: {DATE}")
+print(f"Method: {METHOD}")
 print(f"Peak Hours: {HOURS_PER_YEAR}")
 print(f"Test Sensitivity: {TEST_SENSITIVITY}")
 
@@ -630,12 +646,12 @@ TYPE = 'png'
 #TYPE = 'pdf'
 
 # Uses wind and solar profile averaged over many years
-use_TMY = True
-use_TMY = False
+use_TMY = True if METHOD == "TMY" else False
+#use_TMY = False
 
 # Uses wind and solar profiles from the following year
-use_year_plus_one = True
-use_year_plus_one = False
+use_year_plus_one = True if METHOD == "PLUS1" else False
+#use_year_plus_one = False
 
 assert((use_TMY == True and use_year_plus_one == True) == False), "Use one or the other, you set both use_TMY and use_year_plus_one to True"
 
@@ -647,7 +663,6 @@ test_ordering = True
 make_plots = True
 make_plots = False
 
-DATE = '20210115v3YrPlus1'
 
 # Define scan space by "Total X Generation Potential" instead of installed Cap
 solar_max = 1.

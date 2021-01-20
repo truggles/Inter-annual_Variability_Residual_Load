@@ -20,7 +20,11 @@
 #    sleep 24*13
 #done
 
+DATE="20210120v1"
 #for REGION in "FR"; do
 for REGION in "ERCOT" "NYISO" "PJM" "FR"; do
-    python plotting.py $REGION 20 "comp_methods"
+    for METHOD in "NOM" "TMY" "PLUS1"; do
+        python run_main_analysis.py ${REGION} ${DATE}${METHOD} ${METHOD} 10 &
+        #python plotting.py ${REGION} ${DATE}${METHOD} ${METHOD} 10
+    done
 done
