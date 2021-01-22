@@ -50,7 +50,7 @@ def plot_matrix_slice(region, plot_base, ms, idx_range, alt_idx, save_name, rang
 
 
 
-def plot_matrix_thresholds(region, plot_base, matrix, solar_values, wind_values, save_name):
+def plot_matrix_thresholds(region, plot_base, matrix, solar_values, wind_values, save_name, title=''):
 
     print(f"Plotting: {save_name}")
 
@@ -156,9 +156,9 @@ def plot_matrix_thresholds(region, plot_base, matrix, solar_values, wind_values,
     #if region == 'NYISO' or '_inter' in save_name:
     #    dec = 1
     cbar.ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(xmax=100, decimals=dec))
-    plt.title(f"")
+    plt.title(title)
     #plt.tight_layout()
-    plt.subplots_adjust(left=0.14, bottom=0.25, right=0.88, top=0.97)
+    plt.subplots_adjust(left=0.14, bottom=0.25, right=0.88, top=0.94)
 
 
     plt.savefig(f"{plot_base}/{region}_{save_name}.{TYPE}")
@@ -218,7 +218,13 @@ else:
     HOURS_PER_YEAR = 20
 
 if len(sys.argv) > 5:
-    extra = sys.argv[5]
+    N_YEARS = int(sys.argv[5])
+else:
+    N_YEARS = -1
+
+
+if len(sys.argv) > 6:
+    extra = sys.argv[6]
 
 
 print(f"Region: {region}")
@@ -253,8 +259,9 @@ im = return_file_info_map(region)
 
 mapper = OrderedDict()
 mapper['nom'] = [DATE, 'NOM', '']
-mapper['TMY'] = [DATE, 'TMY', '_TMY']
-mapper['plus1'] = [DATE, 'PLUS1', '']
+mapper['detrend'] = [DATE, 'DT', '']
+#mapper['TMY'] = [DATE, 'TMY', '_TMY']
+#mapper['plus1'] = [DATE, 'PLUS1', '']
 
 
 
@@ -262,7 +269,7 @@ ms = OrderedDict() # Matrices
 
 for name, info in mapper.items():
     print(name, info)
-    pkl_file = f'pkls/pkl_{info[0]}{info[1]}_{steps}x{steps}_{region}_hrs{HOURS_PER_YEAR}{info[2]}'
+    pkl_file = f'pkls/pkl_{info[0]}{info[1]}_{steps}x{steps}_{region}_hrs{HOURS_PER_YEAR}_nYrs{N_YEARS}{info[2]}'
     
     
     
@@ -322,14 +329,19 @@ for name, info in mapper.items():
 
 
 # Normal plots
-plot_matrix_thresholds(region, plot_base, ms['nom'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_NOM')
-plot_matrix_thresholds(region, plot_base, ms['TMY'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_TMY')
-plot_matrix_thresholds(region, plot_base, ms['plus1'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_Plus1')
+plot_matrix_thresholds(region, plot_base, ms['nom'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_NOM', f'{region}: annual norm.')
+if 'TMY' in mapper.keys():
+    plot_matrix_thresholds(region, plot_base, ms['TMY'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_TMY')
+    plot_matrix_thresholds(region, plot_base, ms['TMY'] - ms['nom'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_TMY-Nom')
+if 'plus1' in mapper.keys():
+    plot_matrix_thresholds(region, plot_base, ms['plus1'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_Plus1')
+    plot_matrix_thresholds(region, plot_base, ms['plus1'] - ms['nom'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_Rand-Nom')
+if 'detrend' in mapper.keys():
+    plot_matrix_thresholds(region, plot_base, ms['detrend'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_DT', f'{region}: detrended')
+    plot_matrix_thresholds(region, plot_base, ms['detrend'] - ms['nom'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_DT-Nom', f'{region}: detrended - annual norm.')
 
-plot_matrix_thresholds(region, plot_base, ms['TMY'] - ms['nom'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_TMY-Nom')
-plot_matrix_thresholds(region, plot_base, ms['plus1'] - ms['nom'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_Rand-Nom')
 
-idx_range = [0, 50]
-for alt_idx in [0, 25, 50]:
-    for resource in ['wind', 'solar']:
-        plot_matrix_slice(region, plot_base, ms, idx_range, alt_idx, f'alt_idx_{alt_idx}', resource)
+#idx_range = [0, 50]
+#for alt_idx in [0, 25, 50]:
+#    for resource in ['wind', 'solar']:
+#        plot_matrix_slice(region, plot_base, ms, idx_range, alt_idx, f'alt_idx_{alt_idx}', resource)

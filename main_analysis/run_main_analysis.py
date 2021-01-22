@@ -32,10 +32,15 @@ def get_peak_demand_hour_indices(df):
 
 
 
-def get_dem_wind_solar(im, use_TMY=False):
+def get_dem_wind_solar(im, METHOD):
 
-    rep = '.csv' if not use_TMY else '_TMY2.csv' # if wanting TMY, this will change the file name
-    demand = pd.read_csv('../'+im['demand'][0], header=im['demand'][1])
+    rep = '.csv'
+    if METHOD == 'TMY':
+        rep = '_TMY2.csv' # if wanting TMY, this will change the file name
+    rep_load = '.csv'
+    if METHOD == 'DT':
+        rep_load = '_expDT.csv'
+    demand = pd.read_csv('../'+im['demand'][0].replace('.csv', rep_load), header=im['demand'][1])
     wind = pd.read_csv('../'+im['wind'][0].replace('.csv', rep), header=im['wind'][1])
     solar = pd.read_csv('../'+im['solar'][0].replace('.csv', rep), header=im['solar'][1])
 
@@ -210,12 +215,12 @@ def get_annual_CF(df, name, im, year):
 
 
 
-def get_annual_df(year, df, tgt, im):
+def get_annual_df(year, df, tgt, im, METHOD):
 
     df2 = df.loc[ df[ im[tgt][3]] == year ].copy()
 
     # Normalize
-    if tgt == 'demand':
+    if tgt == 'demand' and METHOD != 'DT':
         df2.loc[:, im[tgt][2]] = df2.loc[:, im[tgt][2]]/np.mean(df2.loc[:, im[tgt][2]])
     return df2
 
@@ -653,18 +658,20 @@ print(f"Test Sensitivity: {TEST_SENSITIVITY}")
 TYPE = 'png'
 #TYPE = 'pdf'
 
-# Uses wind and solar profile averaged over many years
-use_TMY = True if METHOD == "TMY" else False
-#use_TMY = False
+assert(METHOD in ['NOM', 'TMY', 'PLUS1', 'DT']), f"You selected an invalide METHOD: {METHOD}"
 
-# Uses wind and solar profiles from the following year
-use_year_plus_one = True if METHOD == "PLUS1" else False
-#use_year_plus_one = False
+##########################################################################################
+### Different METHODS ###                                                                #
+# NOM = nominal wind and solar resources, w/ annual normalization                        #
+# DT = nominal wind and solar resources, w/ exponential detrending of load data          #
+# TMY = annual normalization & uses wind and solar profile averaged over many years      #
+# PLUS1 = annual normalization & uses wind and solar profiles from the following year    #
+##########################################################################################
 
-assert((use_TMY == True and use_year_plus_one == True) == False), "Use one or the other, you set both use_TMY and use_year_plus_one to True"
-
-if use_TMY:
-    print("You must first create the TMY files with 'prep_TMY_wind_and_solar_profiles.ipynb'")
+if METHOD == 'TMY':
+    print("You must first create the TMY resource files with 'prep_TMY_wind_and_solar_profiles.ipynb'")
+if METHOD == 'DT':
+    print("You must first create the DT load files with 'sensitivity_analysis/detrend_load_data.ipynb'")
 
 test_ordering = True
 #test_ordering = False
@@ -686,7 +693,7 @@ wind_gen_steps = np.linspace(0, wind_max, steps)
 print("Wind gen increments:", wind_gen_steps)
 print("Solar gen increments:", solar_gen_steps)
 
-app = '' if not use_TMY else '_TMY'
+app = ''
 if N_YEARS > 0:
     app += f'_nYrs{N_YEARS}'
 plot_base = f'plots/plots_{DATE}_{steps}x{steps}_{region}_hrs{HOURS_PER_YEAR}{app}'
@@ -706,7 +713,7 @@ if N_YEARS > 0 and N_YEARS > len( years ):
     exit()
 
 if test_ordering:
-    demand, wind, solar = get_dem_wind_solar(im, use_TMY)
+    demand, wind, solar = get_dem_wind_solar(im, METHOD)
     dfs = OrderedDict()
     peak_indices = {}
     print(f"Number of years scanned: {len(years)}")
@@ -723,7 +730,7 @@ if test_ordering:
 
         resource_year = year
         # Use an alternate resource year if this is selected
-        if use_year_plus_one:
+        if METHOD == 'PLUS1':
             if calendar.isleap(year):
                 resource_year += 4
                 if resource_year > years[-1]:
@@ -738,9 +745,9 @@ if test_ordering:
                     resource_year += 1
             print(f"Demand year {year}; resource year {resource_year}; Demand is leap {calendar.isleap(year)}")
 
-        d_yr = get_annual_df(year, demand, 'demand', im)
-        w_yr = get_annual_df(resource_year, wind, 'wind', im)
-        s_yr = get_annual_df(resource_year, solar, 'solar', im)
+        d_yr = get_annual_df(year, demand, 'demand', im, METHOD)
+        w_yr = get_annual_df(resource_year, wind, 'wind', im, METHOD)
+        s_yr = get_annual_df(resource_year, solar, 'solar', im, METHOD)
         d_yr.reset_index()
         w_yr.reset_index()
         s_yr.reset_index()
