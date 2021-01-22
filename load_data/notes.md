@@ -109,7 +109,7 @@ Data is every 30 min. Time in not clearly stated, but is in units of "settlement
 
 https://opendata.reseaux-energies.fr/explore/dataset/consommation-quotidienne-brute-elec/information/?disjunctive.qualite
 
-Can make an account and download the data, 2008-2018 (validated), includes 2019 to current as well.
+Can make an account and download the data, 2008-2018 (validated), includes un-validated 2020 as well, but is missing 2019 data.
 Data looks okay. The downloaded files need to be sorted by datetime, not sure why.
 
 Data is in 30 min intervals, so avg to calc hourly for MEM. Values appear to be reported at
