@@ -4,6 +4,34 @@ import pickle
 import matplotlib.pyplot as plt
 import matplotlib
 
+
+def get_info(pkl_file, solar_gen_steps, wind_gen_steps, region, HOURS_PER_YEAR, 
+            regs, solar, wind, hours, inter, intra, std, mean):
+    pickle_in = open(f'{pkl_file}.pkl','rb')
+    study_regions = pickle.load(pickle_in)
+    
+    for i, solar_gen in enumerate(solar_gen_steps):
+        if solar_gen not in solar_vals:
+            continue
+        for j, wind_gen in enumerate(wind_gen_steps):
+            if wind_gen not in wind_vals:
+                continue
+            print(region, HOURS_PER_YEAR, solar_gen, wind_gen)
+            wind_gen = wind_gen_steps[j]
+            rls = study_regions[str(round(solar_gen,2))][str(round(wind_gen,2))][0]
+    
+            # Fill a new row
+            regs.append(region)
+            solar.append(solar_gen)
+            wind.append(wind_gen)
+            hours.append(HOURS_PER_YEAR)
+            inter.append(np.std(study_regions[str(round(solar_gen,2))][str(round(wind_gen,2))][5])*100.)
+            intra.append(np.mean(study_regions[str(round(solar_gen,2))][str(round(wind_gen,2))][4])*100)
+            std.append(np.std(rls)*100)
+            mean.append(np.mean(rls)*100)
+
+
+
 DATE = '20210121v2NOM'
 solar_max = 1.
 wind_max = 1.
@@ -19,10 +47,10 @@ solar_vals = [0., 0.25, 0.5]
 wind_vals = [0., 0.25, 0.5]
     
 make_summary = True
-make_summary = False
+#make_summary = False
 
 plot = True
-#plot = False
+plot = False
 
 if make_summary:
     regs = []
@@ -37,37 +65,10 @@ if make_summary:
     for region in regions:
         for HOURS_PER_YEAR in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 50, 75, 100, 200]:
             pkl_file = f'../main_analysis/pkls/pkl_{DATE}_{steps}x{steps}_{region}_hrs{HOURS_PER_YEAR}'
-            pickle_in = open(f'{pkl_file}.pkl','rb')
-            study_regions = pickle.load(pickle_in)
-        
-            for i, solar_gen in enumerate(solar_gen_steps):
-                if solar_gen not in solar_vals:
-                    continue
-                for j, wind_gen in enumerate(wind_gen_steps):
-                    if wind_gen not in wind_vals:
-                        continue
-                    print(region, HOURS_PER_YEAR, solar_gen, wind_gen)
-                    wind_gen = wind_gen_steps[j]
-                    rls = study_regions[str(round(solar_gen,2))][str(round(wind_gen,2))][0]
-    
-                    # Fill a new row
-                    regs.append(region)
-                    solar.append(solar_gen)
-                    wind.append(wind_gen)
-                    hours.append(HOURS_PER_YEAR)
-                    inter.append(np.std(study_regions[str(round(solar_gen,2))][str(round(wind_gen,2))][5])*100.)
-                    intra.append(np.mean(study_regions[str(round(solar_gen,2))][str(round(wind_gen,2))][4])*100)
-                    std.append(np.std(rls)*100)
-                    mean.append(np.mean(rls)*100)
+            get_info(pkl_file, solar_gen_steps, wind_gen_steps, region, HOURS_PER_YEAR, 
+                    regs, solar, wind, hours, inter, intra, std, mean)
     
     
-                    #m_rl_mean[i].append(np.mean(rls)*100)
-                    #m_rl_std[i].append(np.std(rls)*100)
-                    ##m_rl_50pct[i].append( (np.percentile(rls, 75) - np.percentile(rls, 25))*100)
-                    ##m_rl_95pct[i].append( (np.percentile(rls, 97.5) - np.percentile(rls, 2.5))*100)
-                    ##m_rl_Mto97p5pct[i].append( (np.percentile(rls, 97.5) - np.mean(rls))*100)
-                    #intra[i].append(np.mean(study_regions[str(round(solar_gen,2))][str(round(wind_gen,2))][4])*100.)
-                    #inter[i].append(np.std(study_regions[str(round(solar_gen,2))][str(round(wind_gen,2))][5])*100.)
         
     
     
