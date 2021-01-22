@@ -29,7 +29,7 @@ DATE="20210121v3"
 METHOD="NOM"
 HOURS=10
 for REGION in "ERCOT" "NYISO" "PJM" "FR"; do
-    for YEARS in 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
+    for YEARS in 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
         python run_main_analysis.py ${REGION} ${DATE}${METHOD} ${METHOD} ${HOURS} ${YEARS} "SENSITIVITY" &
     done
     #sleep 1000
