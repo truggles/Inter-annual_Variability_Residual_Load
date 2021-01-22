@@ -199,17 +199,32 @@ print(f"Input arg list {sys.argv}")
 if len(sys.argv) > 1:
     region = sys.argv[1]
 
+
 if len(sys.argv) > 2:
-    HOURS_PER_YEAR = int(sys.argv[2])
+    DATE = sys.argv[2]
+else:
+    DATE = '20210115v1'
+
+
+if len(sys.argv) > 3:
+    METHOD = sys.argv[3]
+else:
+    METHOD = "Nom"
+
+
+if len(sys.argv) > 4:
+    HOURS_PER_YEAR = int(sys.argv[4])
 else:
     HOURS_PER_YEAR = 20
 
-if len(sys.argv) > 3:
-    extra = sys.argv[3]
+if len(sys.argv) > 5:
+    extra = sys.argv[5]
+
 
 print(f"Region: {region}")
+print(f"Date: {DATE}")
+print(f"Method: {METHOD}")
 print(f"Peak Hours: {HOURS_PER_YEAR}")
-
 
 
 ### HERE
@@ -218,7 +233,6 @@ TYPE = 'png'
 #TYPE = 'pdf'
 
 
-DATE = '20210115v3YrPlus1'
 
 # Define scan space by "Total X Generation Potential" instead of installed Cap
 solar_max = 1.
@@ -238,9 +252,9 @@ im = return_file_info_map(region)
 
 
 mapper = OrderedDict()
-mapper['nom'] = ['20210115v1', '']
-mapper['TMY'] = ['20210115v2TMY2', '_TMY']
-mapper['rand'] = ['20210115v3YrPlus1', '']
+mapper['nom'] = [DATE, 'NOM', '']
+mapper['TMY'] = [DATE, 'TMY', '_TMY']
+mapper['plus1'] = [DATE, 'PLUS1', '']
 
 
 
@@ -248,11 +262,11 @@ ms = OrderedDict() # Matrices
 
 for name, info in mapper.items():
     print(name, info)
-    pkl_file = f'pkls/pkl_{info[0]}_{steps}x{steps}_{region}_hrs{HOURS_PER_YEAR}{info[1]}'
+    pkl_file = f'pkls/pkl_{info[0]}{info[1]}_{steps}x{steps}_{region}_hrs{HOURS_PER_YEAR}{info[2]}'
     
     
     
-    print(f"Opeing {pkl_file}.pkl")
+    print(f"Opening {pkl_file}.pkl")
     pickle_in = open(f'{pkl_file}.pkl','rb')
     study_regions = pickle.load(pickle_in)
     
@@ -307,10 +321,13 @@ for name, info in mapper.items():
 
 
 
-
+# Normal plots
+plot_matrix_thresholds(region, plot_base, ms['nom'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_NOM')
+plot_matrix_thresholds(region, plot_base, ms['TMY'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_TMY')
+plot_matrix_thresholds(region, plot_base, ms['plus1'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_Plus1')
 
 plot_matrix_thresholds(region, plot_base, ms['TMY'] - ms['nom'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_TMY-Nom')
-plot_matrix_thresholds(region, plot_base, ms['rand'] - ms['nom'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_Rand-Nom')
+plot_matrix_thresholds(region, plot_base, ms['plus1'] - ms['nom'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_Rand-Nom')
 
 idx_range = [0, 50]
 for alt_idx in [0, 25, 50]:
