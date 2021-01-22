@@ -4,8 +4,7 @@ import pickle
 import matplotlib.pyplot as plt
 import matplotlib
 
-
-DATE = '20201230v1'
+DATE = '20210121v2NOM'
 solar_max = 1.
 wind_max = 1.
 steps = 101
@@ -16,9 +15,8 @@ print("Solar gen increments:", solar_gen_steps)
 
 
 regions = ['ERCOT','PJM','NYISO','FR']
-solar_vals = [0., 0.25]
+solar_vals = [0., 0.25, 0.5]
 wind_vals = [0., 0.25, 0.5]
-wind_vals = [0., 0.25]
     
 make_summary = True
 make_summary = False
@@ -37,8 +35,8 @@ if make_summary:
     mean = []
     
     for region in regions:
-        for HOURS_PER_YEAR in [1, 2, 3, 4, 5, 10, 15, 20, 25, 50, 75, 100, 200]:
-            pkl_file = f'pkls/pkl_{DATE}_{steps}x{steps}_{region}_hrs{HOURS_PER_YEAR}'
+        for HOURS_PER_YEAR in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 50, 75, 100, 200]:
+            pkl_file = f'../main_analysis/pkls/pkl_{DATE}_{steps}x{steps}_{region}_hrs{HOURS_PER_YEAR}'
             pickle_in = open(f'{pkl_file}.pkl','rb')
             study_regions = pickle.load(pickle_in)
         
@@ -88,6 +86,9 @@ if make_summary:
 if not plot:
     exit()
 
+solar_vals = [0., 0.25]#, 0.5]
+wind_vals = [0., 0.25]#, 0.5]
+
 df = pd.read_csv('summary_n_hour.csv')
 multi = df.set_index(['region', 'solar', 'wind']).sort_index()
 
@@ -101,7 +102,7 @@ multi = df.set_index(['region', 'solar', 'wind']).sort_index()
 #
 #    ax.set_ylim(0, ax.get_ylim()[1])
 #    plt.legend()
-#    plt.savefig(f'plotsX/{region}.png')
+#    plt.savefig(f'plots/{region}.png')
 #
 #for region in regions:
 #    scale = 4.5
@@ -127,7 +128,7 @@ multi = df.set_index(['region', 'solar', 'wind']).sort_index()
 #    plt.title(region)
 #    plt.legend()
 #    plt.subplots_adjust(left=0.2, bottom=0.15, right=0.95, top=0.9)
-#    plt.savefig(f'plotsX/{region}_diff.png')
+#    plt.savefig(f'plots/{region}_diff.png')
 
 
 
@@ -151,7 +152,6 @@ for i, region in enumerate(regions):
             else:
                 lab = f'RL({w}% wind, {s}% solar)'
                 axs[0][i].plot(multi.loc[(region, solar, wind)]['hours'].values, multi.loc[(region, solar, wind)]['inter'].values, label=lab)
-            axs[0][i].set_xlabel("peak hours")
     axs[0][i].set_xlim(0, 200)
     if region == 'ERCOT':
         axs[0][i].set_ylabel(r"inter-annual variability"+"\n(% mean annual load)")
@@ -179,6 +179,7 @@ for i, region in enumerate(regions):
             axs[1][i].plot(multi.loc[(region, solar, wind)]['hours'].values, (multi.loc[(region, 0, 0)]['inter'].values - multi.loc[(region, solar, wind)]['inter'].values), label=f'Load - RL({w}% wind, {s}% solar)')
             axs[1][i].set_xlabel("peak hours")
     axs[1][i].set_xlim(0, 200)
+    axs[1][i].xaxis.set_major_locator(matplotlib.ticker.MultipleLocator(50))
     if region == 'ERCOT':
         axs[1][i].set_ylabel(r"$\Delta$ inter-annual variability"+"\n(% mean annual load)")
     axs[1][i].set_ylim(y_min, y_max)
@@ -193,5 +194,5 @@ for i, region in enumerate(regions):
         vert = 0.22
         axs[1][i].legend(loc='center', framealpha = 1.0, bbox_to_anchor=(horiz, vert))
     plt.subplots_adjust(left=0.12, bottom=0.08, right=0.9, top=0.94)
-    plt.savefig(f'plotsX/all_sensitivity.pdf')
+    plt.savefig(f'plots/all_sensitivity.pdf')
 

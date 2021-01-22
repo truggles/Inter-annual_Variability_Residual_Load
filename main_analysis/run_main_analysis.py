@@ -618,7 +618,7 @@ else:
 if len(sys.argv) > 3:
     METHOD = sys.argv[3]
 else:
-    METHOD = 20
+    METHOD = "Nom"
 
 
 if len(sys.argv) > 4:
