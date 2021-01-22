@@ -12,14 +12,27 @@
 #    python run_main_analysis.py $REGION &
 #done
 
+############################
+### Sensitivity analyses ###
+############################
+### N Hours
+#DATE="20210121v2"
+#METHOD="NOM"
+#for REGION in "ERCOT" "NYISO" "PJM" "FR"; do
+#    for HOURS in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 25 50 75 100 200; do
+#        python run_main_analysis.py ${REGION} ${DATE}${METHOD} ${METHOD} $HOURS "SENSITIVITY" &
+#    done
+#    sleep 1000
+#done
 
-DATE="20210121v2"
+DATE="20210121v3"
 METHOD="NOM"
+HOURS=10
 for REGION in "ERCOT" "NYISO" "PJM" "FR"; do
-    for HOURS in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 25 50 75 100 200; do
-        python run_main_analysis.py ${REGION} ${DATE}${METHOD} ${METHOD} $HOURS &
+    for YEARS in 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
+        python run_main_analysis.py ${REGION} ${DATE}${METHOD} ${METHOD} ${HOURS} ${YEARS} "SENSITIVITY" &
     done
-    sleep 1000
+    #sleep 1000
 done
 
 DATE="20210120v1"

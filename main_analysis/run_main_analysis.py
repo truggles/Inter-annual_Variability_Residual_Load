@@ -556,10 +556,12 @@ def make_threshold_hist(vect, save_name, cnt, base, gens):
 
 # Return top 20 values for: residual load (rls), wind/solar CFs (w/s_cfs), and
 # residual load values for peak X hours (pls)
-def get_top_X_per_year(hours_per_year, dfs, peak_indices, wind_install_cap, solar_install_cap, PRINT=False):
+def get_top_X_per_year(hours_per_year, years_used, dfs, peak_indices, wind_install_cap, solar_install_cap, PRINT=False):
     first = True
     rl_vects = []
-    for year, df in dfs.items():
+    #for year, df in dfs.items():
+    for year in years_used:
+        df = dfs[year]
         df['RL'] = df['demand'] - df['solar'] * solar_install_cap - df['wind'] * wind_install_cap
         df_sort = df.sort_values(by=['RL'], ascending=False)
 
@@ -626,8 +628,13 @@ if len(sys.argv) > 4:
 else:
     HOURS_PER_YEAR = 20
 
-
 if len(sys.argv) > 5:
+    N_YEARS = int(sys.argv[5])
+else:
+    N_YEARS = -1
+
+
+if len(sys.argv) > 6:
     TEST_SENSITIVITY = True
 else:
     TEST_SENSITIVITY = False
@@ -636,6 +643,7 @@ print(f"Region: {region}")
 print(f"Date: {DATE}")
 print(f"Method: {METHOD}")
 print(f"Peak Hours: {HOURS_PER_YEAR}")
+print(f"N Years: {N_YEARS}")
 print(f"Test Sensitivity: {TEST_SENSITIVITY}")
 
 
@@ -669,9 +677,9 @@ solar_max = 1.
 wind_max = 1.
 steps = 101
 if TEST_SENSITIVITY:
-    solar_max = 0.25
-    wind_max = 0.25
-    steps = 26
+    solar_max = 0.5
+    wind_max = 0.5
+    steps = 51
 
 solar_gen_steps = np.linspace(0, solar_max, steps)
 wind_gen_steps = np.linspace(0, wind_max, steps)
@@ -679,6 +687,8 @@ print("Wind gen increments:", wind_gen_steps)
 print("Solar gen increments:", solar_gen_steps)
 
 app = '' if not use_TMY else '_TMY'
+if N_YEARS > 0:
+    app += f'_nYrs{N_YEARS}'
 plot_base = f'plots/plots_{DATE}_{steps}x{steps}_{region}_hrs{HOURS_PER_YEAR}{app}'
 if not os.path.exists(plot_base):
     os.makedirs(plot_base)
@@ -686,15 +696,30 @@ if not os.path.exists(plot_base):
 pkl_file = f'pkls/pkl_{DATE}_{steps}x{steps}_{region}_hrs{HOURS_PER_YEAR}{app}'
 
 im = return_file_info_map(region)
+
+years = im['years']
+
+# Check 1) if N_YEARS test, and 2) if the request number is greater than the length
+# for this region
+if N_YEARS > 0 and N_YEARS > len( years ):
+    print(f"Skipping N_YEARS = {N_YEARS} for {region} with usable years length = {len(years)}")
+    exit()
+
 if test_ordering:
     demand, wind, solar = get_dem_wind_solar(im, use_TMY)
     dfs = OrderedDict()
     peak_indices = {}
-    years = im['years']
     print(f"Number of years scanned: {len(years)}")
     #years = [y for y in range(2005, 2009)]
 
-    for year in years:
+    years_used = []
+    #for iii, year in enumerate(years):
+    for iii, year in enumerate(reversed(years)):
+
+        if iii >= N_YEARS:
+            continue
+
+        years_used.append(year)
 
         resource_year = year
         # Use an alternate resource year if this is selected
@@ -722,6 +747,8 @@ if test_ordering:
         dfs[year] = return_ordered_df(d_yr, w_yr, s_yr, im)
         peak_indices[year] = get_peak_demand_hour_indices(dfs[year])
 
+    years_used.sort()
+    print(f"Keys {dfs.keys()}")
     avg_wind_CF = get_avg_CF(dfs, 'wind', im)
     avg_solar_CF = get_avg_CF(dfs, 'solar', im)
     print(f"Avg wind CF: {avg_wind_CF}")
@@ -755,7 +782,7 @@ if test_ordering:
 
             # Get top 20 peak residual load hours for each combo
             hours_per_year = HOURS_PER_YEAR
-            rls, w_cfs, s_cfs, pls, rl_vects, stds, mus, hours = get_top_X_per_year(hours_per_year, dfs, peak_indices, wind_install_cap, solar_install_cap)
+            rls, w_cfs, s_cfs, pls, rl_vects, stds, mus, hours = get_top_X_per_year(hours_per_year, years_used, dfs, peak_indices, wind_install_cap, solar_install_cap)
             mapper[str(round(solar_gen,2))][str(round(wind_gen,2))] = [rls, w_cfs, s_cfs, pls, stds, mus]
 
 
@@ -766,7 +793,7 @@ if test_ordering:
             #if (j<26 and i==0) or (j==25 and i<26) or (j==0 and i==25):
             #if (i<21 and j==0) or (i==20 and j<21) or (i==0 and j==20):
             if (i==0 and j==0) or (i==25 and j==0) or (i==0 and j==25) or (i==25 and j==25) or (i==50 and j==0) or (i==0 and j==50) or (i==50 and j==50):
-                vals = get_top_X_per_year(hours_per_year, dfs, peak_indices, wind_install_cap, solar_install_cap, True)
+                vals = get_top_X_per_year(hours_per_year, years_used, dfs, peak_indices, wind_install_cap, solar_install_cap, True)
                 vals.sort()
                 print(i, j, vals)
                 cnts = []
@@ -787,7 +814,7 @@ if test_ordering:
                 #    continue
                 rl_cnt += 1
                 #PDF_plots(dfs, f'ordering_{region}', wind_install_cap, solar_install_cap, cnt, plot_base, [wind_gen, solar_gen])
-                plot_rl_box(rl_vects, years, f'ordering_{region}', wind_install_cap, solar_install_cap, rl_cnt, plot_base, [wind_gen, solar_gen])
+                plot_rl_box(rl_vects, years_used, f'ordering_{region}', wind_install_cap, solar_install_cap, rl_cnt, plot_base, [wind_gen, solar_gen])
                 #detrend_peak: new_rls_map = plot_rl_box(rl_vects, years, f'ordering_{region}', wind_install_cap, solar_install_cap, rl_cnt, plot_base, [wind_gen, solar_gen])
                 #detrend_peak: plot_rl_box(new_rls_map, years, f'ordering_{region}_calib', wind_install_cap, solar_install_cap, rl_cnt, plot_base, [wind_gen, solar_gen])
                 #box_thresholds = [20,]
