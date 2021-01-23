@@ -64,10 +64,10 @@ assert(n_hours_test != n_years_test), "Cannot have to tests analyzed simultaneou
 
 if n_hours_test:
     s_name = 'n_hours'
-    DATE = '20210121v2NOM'
-    solar_max = 1.
-    wind_max = 1.
-    steps = 101
+    DATE = '20210122v3DT'
+    solar_max = 0.5
+    wind_max = 0.5
+    steps = 51
     # plotting params
     x_min = 0
     x_max = 200
@@ -81,16 +81,16 @@ if n_hours_test:
     thresh_lab = '10 hours'
 if n_years_test:
     s_name = 'n_years'
-    DATE = '20210121v3NOM'
+    DATE = '20210122v2DT'
     solar_max = 0.5
     wind_max = 0.5
     steps = 51
     # plotting params
     x_min = 0
     x_max = 20
-    y_max1 = 11
-    y_max2 = 5
-    y_min2 = -5
+    y_max1 = 12.5
+    y_max2 = 6
+    y_min2 = -6
     x_lab = "number of years"
     x_var = 'years'
     n_loc = 5
@@ -120,7 +120,7 @@ if make_summary:
 
         if n_hours_test:
             for HOURS_PER_YEAR in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 50, 75, 100, 200]:
-                pkl_file = f'../main_analysis/pkls/pkl_{DATE}_{steps}x{steps}_{region}_hrs{HOURS_PER_YEAR}.pkl'
+                pkl_file = f'../main_analysis/pkls/pkl_{DATE}_{steps}x{steps}_{region}_hrs{HOURS_PER_YEAR}_nYrs10.pkl'
                 get_info(pkl_file, solar_gen_steps, wind_gen_steps, region, HOURS_PER_YEAR, 
                         regs, solar, wind, hours, years, inter, intra, std, mean)
     
@@ -274,12 +274,15 @@ for i, region in enumerate(regions):
     if region != 'ERCOT':
         axs[1][i].set(yticklabels=[])
     axs[1][i].plot(np.ones(100)*thresh, np.linspace(y_min2, y_max2, 100), '--r', label=f"threshold = {thresh_lab}")
+    axs[1][i].set_xlim(1, axs[1][i].get_xlim()[1])
+    axs[1][i].set_xscale("log")
+    axs[1][i].set_xticks([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 20, 40, 50, 60, 70, 80, 90, 100, 200])
     #plt.title(region)
     if region == 'FR':
         if n_hours_test:
             vert = 0.22
-            horiz = 0.4
-            p = {}
+            horiz = 0.5
+            p = {'size': 9}
         if n_years_test:
             vert = 0.21
             horiz = 0.52
