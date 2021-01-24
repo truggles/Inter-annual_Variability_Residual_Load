@@ -52,7 +52,6 @@ def plot_matrix_slice(region, plot_base, ms, idx_range, alt_idx, save_name, rang
 
 
 
-
 def plot_matrix_thresholds(region, plot_base, mx_ary, solar_values, wind_values, save_name, titles=['',]):
 
     print(f"Plotting: {save_name}")
@@ -185,7 +184,7 @@ def plot_matrix_thresholds(region, plot_base, mx_ary, solar_values, wind_values,
             #cbar.ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(xmax=100, decimals=dec))
 
             fig.subplots_adjust(right=0.88)
-            cbar_ax = fig.add_axes([0.89, 0.25, 0.02, 0.65])
+            cbar_ax = fig.add_axes([0.89, 0.265, 0.02, 0.9 - 0.265])
             cbar = fig.colorbar(ims[-1], cax=cbar_ax)
             cbar.ax.set_ylabel(ylab)
             dec = 0
@@ -204,6 +203,163 @@ def plot_matrix_thresholds(region, plot_base, mx_ary, solar_values, wind_values,
     # hide tick and tick label of the big axis
     plt.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
     ax.set_xlabel("wind generation (% load)", labelpad=21)
+
+    plt.savefig(f"{plot_base}/{region}_{save_name}.{TYPE}")
+    plt.clf()
+
+
+def plot_matrix_thresholds_sq(region, plot_base, mx_ary, solar_values, wind_values, save_name, titles=['',]):
+
+    print(f"Plotting: {save_name}")
+
+    plt.close()
+    matplotlib.rcParams.update({'font.size': 14})
+    fig, axs = plt.subplots(figsize=(7, 6), ncols=2, nrows=2, sharey=True, sharex=True)
+
+    # Contours
+    min_and_max = []
+    if 'RL_mean' in save_name:
+        n_levels = np.arange(0,200,10)
+        c_fmt = '%3.0f'
+        ylab = "$\mu$ peak residual load\n(% load)"
+        min_and_max = [100, 170]
+    elif 'RL_std' in save_name:
+        n_levels = np.arange(0,15,0.5)
+        c_fmt = '%1.1f'
+        ylab = "$\sigma$ peak residual load\n(% load)"
+        min_and_max = [4, 10]
+    elif 'RL_50pct' in save_name:
+        n_levels = np.arange(0,50,2.5)
+        c_fmt = '%1.1f'
+        ylab = "mid-50% range peak residual load\n(% load)"
+    elif 'RL_95pct' in save_name:
+        n_levels = np.arange(0,50,5)
+        c_fmt = '%1.1f'
+        ylab = "mid-95% range peak residual load\n(% load)"
+    elif 'RL_Mto97p5pct' in save_name:
+        n_levels = np.arange(0,50,2.5)
+        c_fmt = '%1.1f'
+        ylab = "50-97.5% range peak residual load\n(% load)"
+    elif 'PL_mean' in save_name:
+        n_levels = np.arange(-100,200,20)
+        c_fmt = '%3.0f'
+        ylab = "$\mu$ residual load of peak\nload hours (% load)"
+    elif 'PL_std' in save_name:
+        n_levels = np.arange(0,100,5)
+        c_fmt = '%1.0f'
+        ylab = "$\sigma$ residual load of peak\nload hours (% load)"
+    elif '_mean' in save_name: # else if so gets solar and wind means
+        n_levels = np.arange(0,200,10)
+        c_fmt = '%3.0f'
+        app = 'wind' if 'wind' in save_name else 'solar'
+        ylab = f"$\mu$ {app} capacity factor\n(during peak residual load hours)"
+        if '_solar' in save_name:
+            min_and_max = [0, 70]
+        if '_wind' in save_name:
+            min_and_max = [0, 50]
+
+    elif '_inter' in save_name:
+        n_levels = np.arange(0,20,1)
+        c_fmt = '%3.1f'
+        ylab = "inter-annual variability (% load)"
+        min_and_max = [3, 10]
+        if 'Nom' in save_name:
+            n_levels = np.arange(-3,3,.2)
+            c_fmt = '%3.2f'
+            min_and_max = [-3, 3]
+    elif '_intra' in save_name:
+        n_levels = np.arange(0,20,1)
+        c_fmt = '%3.1f'
+        ylab = "intra-annual variability\n(% load)"
+        min_and_max = [2, 8]
+    elif 'QuadR' in save_name:
+        n_levels = np.arange(-10,10,1)
+        c_fmt = '%1.1f'
+        ylab = "$\sigma$ residual load of peak\nload hours (% load)"
+        #min_and_max = [-6, 1]
+
+    # Clip colormap before yellow high values so white
+    # contour text shows up.
+    cmapBig = matplotlib.cm.get_cmap('plasma', 512)
+    top = 0.85
+    cmapShort = matplotlib.colors.ListedColormap(cmapBig(np.linspace(0.0, top, int(512*top))))
+
+    ims = []
+    css = []
+    cnt = 0
+    for matrix, title in zip(mx_ary, titles):
+        if len(min_and_max) == 0:
+            im = axs.flatten()[cnt].imshow(matrix, interpolation='none', origin='lower', cmap=cmapShort)
+        else:
+            im = axs.flatten()[cnt].imshow(matrix, interpolation='none', origin='lower', vmin=min_and_max[0], vmax=min_and_max[1], cmap=cmapShort)
+        ims.append(im)
+
+        cs = axs.flatten()[cnt].contour(matrix, n_levels, colors='w')
+        css.append(cs)
+        # inline labels
+        axs.flatten()[cnt].clabel(cs, inline=1, fontsize=12, fmt=c_fmt)
+
+        wind_labs, solar_labs = [], []
+        for v in wind_values:
+            if int(v*4)==v*4:
+                wind_labs.append(f"{int(v*100)}%")
+            else:
+                wind_labs.append('')
+        for v in solar_values:
+            if int(v*4)==v*4:
+                solar_labs.append(f"{int(v*100)}%")
+            else:
+                solar_labs.append('')
+        axs.flatten()[cnt].xaxis.set_major_locator(matplotlib.ticker.FixedLocator([0, 25, 50, 75, 100]))
+        axs.flatten()[cnt].xaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(xmax=100, decimals=0))
+        axs.flatten()[cnt].yaxis.set_major_locator(matplotlib.ticker.FixedLocator([0, 25, 50, 75, 100]))
+        axs.flatten()[cnt].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(xmax=100, decimals=0))
+        #my_ticks = np.arange(0, 101, 5)
+        #my_labs = ['' for _ in range(len(my_ticks))]
+        #my_labs[0] = '0%'
+        #my_labs[5] = '25%'
+        #my_labs[10] = '50%'
+        #my_labs[15] = '75%'
+        #my_labs[20] = '100%'
+        #axs.flatten()[cnt].set_xticks(my_ticks, my_labs)
+        #axs.flatten()[cnt].set_yticks(my_ticks, my_labs)
+        ##axs.flatten()[cnt].set_xticks(range(len(wind_values)), wind_labs, rotation=90)
+        plt.setp( axs.flatten()[cnt].xaxis.get_majorticklabels(), rotation=40 )
+        # Adding X label below with one big overlaid axis
+        #axs.flatten()[cnt].set_xlabel("wind generation\n(% load)")
+        #if cnt == 0:
+        #    axs.flatten()[cnt].set_ylabel("solar generation (% load)")
+        #else:
+        if cnt != 0:
+            solar_labs = ['' for i in range(len(solar_values))]
+        #axs.flatten()[cnt].set_yticks(range(len(solar_values)), solar_labs)
+        if cnt + 1 == len(axs):
+            #cbar = axs.flatten()[cnt].figure.colorbar(im)
+            #cbar.ax.set_ylabel(ylab)
+            #dec = 0
+            #cbar.ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(xmax=100, decimals=dec))
+
+            fig.subplots_adjust(right=0.85)
+            cbar_ax = fig.add_axes([0.86, 0.16+.05, 0.02, 0.94 - .16 -.1])
+            cbar = fig.colorbar(ims[-1], cax=cbar_ax)
+            cbar.ax.set_ylabel(ylab)
+            dec = 0
+            cbar.ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(xmax=100, decimals=dec))
+
+        axs.flatten()[cnt].set_title(title)
+        cnt += 1
+    #plt.tight_layout()
+    #plt.subplots_adjust(left=0.14, bottom=0.25, right=0.88, top=0.9)
+    plt.subplots_adjust(left=0.11, bottom=0.16, top=0.94)
+
+    # SHARED X AXIS LABEL
+    # https://stackoverflow.com/questions/16150819/common-xlabel-ylabel-for-matplotlib-subplots/53172335
+    # add a big axis, hide frame
+    ax = fig.add_subplot(111, frameon=False)
+    # hide tick and tick label of the big axis
+    plt.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
+    ax.set_xlabel("wind generation (% load)", labelpad=25)
+    ax.set_ylabel("solar generation (% load)", labelpad=10.5)
 
     plt.savefig(f"{plot_base}/{region}_{save_name}.{TYPE}")
     plt.clf()
@@ -405,7 +561,8 @@ if region == 'ALL':
     for k, v in ms.items():
         titles.append(k)
         ms_ary.append(v)
-    plot_matrix_thresholds(region, plot_base, ms_ary, solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_ALL', titles)
+    #plot_matrix_thresholds(region, plot_base, ms_ary, solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_ALL', titles)
+    plot_matrix_thresholds_sq(region, plot_base, ms_ary, solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_ALL_sq', titles)
 
 
 
