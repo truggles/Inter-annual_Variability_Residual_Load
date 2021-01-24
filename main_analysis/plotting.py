@@ -16,7 +16,10 @@ from shutil import copy2
 import copy
 import calendar
 
-sys.path.append("/home/truggles/Inter-annual_Variability_Residual_Load")
+import socket
+
+app = 'Users' if socket.gethostname() == 'truggles-ciw' else 'home'
+sys.path.append(f"/{app}/truggles/Inter-annual_Variability_Residual_Load")
 from helpers import return_file_info_map
 
 
@@ -37,11 +40,11 @@ def plot_matrix_slice(region, plot_base, ms, idx_range, alt_idx, save_name, rang
 
     ax.set_ylim( 0, ax.get_ylim()[1] )
 
-    ax.set_xlabel(f"{range_name} generation\n(% mean annual load)")
+    ax.set_xlabel(f"{range_name} generation\n(% load)")
     opp = 'wind' if range_name == 'solar' else 'solar'
-    plt.title(f"{opp} generation {alt_idx} (% mean annual load)")
+    plt.title(f"{opp} generation {alt_idx} (% load)")
     #plt.tight_layout()
-    plt.subplots_adjust(left=0.14, bottom=0.25, right=0.88, top=0.9)
+    plt.subplots_adjust(left=0.1, bottom=0.25, right=0.8, top=0.9)
 
     plt.legend()
     plt.savefig(f"{plot_base}/{region}_{save_name}_{range_name}.{TYPE}")
@@ -50,46 +53,47 @@ def plot_matrix_slice(region, plot_base, ms, idx_range, alt_idx, save_name, rang
 
 
 
-def plot_matrix_thresholds(region, plot_base, matrix, solar_values, wind_values, save_name, title=''):
+def plot_matrix_thresholds(region, plot_base, mx_ary, solar_values, wind_values, save_name, titles=['',]):
 
     print(f"Plotting: {save_name}")
 
     plt.close()
     matplotlib.rcParams.update({'font.size': 14})
-    fig, ax = plt.subplots()#figsize=(4.5, 4))
+    cols = len(mx_ary)
+    fig, axs = plt.subplots(figsize=(2.8*cols, 3.2), ncols=cols, sharey=True)
 
     # Contours
     min_and_max = []
     if 'RL_mean' in save_name:
         n_levels = np.arange(0,200,10)
         c_fmt = '%3.0f'
-        ylab = "$\mu$ peak residual load\n(% mean annual load)"
+        ylab = "$\mu$ peak residual load\n(% load)"
         min_and_max = [100, 170]
     elif 'RL_std' in save_name:
         n_levels = np.arange(0,15,0.5)
         c_fmt = '%1.1f'
-        ylab = "$\sigma$ peak residual load\n(% mean annual load)"
+        ylab = "$\sigma$ peak residual load\n(% load)"
         min_and_max = [4, 10]
     elif 'RL_50pct' in save_name:
         n_levels = np.arange(0,50,2.5)
         c_fmt = '%1.1f'
-        ylab = "mid-50% range peak residual load\n(% mean annual load)"
+        ylab = "mid-50% range peak residual load\n(% load)"
     elif 'RL_95pct' in save_name:
         n_levels = np.arange(0,50,5)
         c_fmt = '%1.1f'
-        ylab = "mid-95% range peak residual load\n(% mean annual load)"
+        ylab = "mid-95% range peak residual load\n(% load)"
     elif 'RL_Mto97p5pct' in save_name:
         n_levels = np.arange(0,50,2.5)
         c_fmt = '%1.1f'
-        ylab = "50-97.5% range peak residual load\n(% mean annual load)"
+        ylab = "50-97.5% range peak residual load\n(% load)"
     elif 'PL_mean' in save_name:
         n_levels = np.arange(-100,200,20)
         c_fmt = '%3.0f'
-        ylab = "$\mu$ residual load of peak\nload hours (% mean annual load)"
+        ylab = "$\mu$ residual load of peak\nload hours (% load)"
     elif 'PL_std' in save_name:
         n_levels = np.arange(0,100,5)
         c_fmt = '%1.0f'
-        ylab = "$\sigma$ residual load of peak\nload hours (% mean annual load)"
+        ylab = "$\sigma$ residual load of peak\nload hours (% load)"
     elif '_mean' in save_name: # else if so gets solar and wind means
         n_levels = np.arange(0,200,10)
         c_fmt = '%3.0f'
@@ -103,7 +107,7 @@ def plot_matrix_thresholds(region, plot_base, matrix, solar_values, wind_values,
     elif '_inter' in save_name:
         n_levels = np.arange(0,20,1)
         c_fmt = '%3.1f'
-        ylab = "inter-annual variability\n(% mean annual load)"
+        ylab = "inter-annual variability\n(% load)"
         min_and_max = [3, 10]
         if 'Nom' in save_name:
             n_levels = np.arange(-3,3,.2)
@@ -112,12 +116,12 @@ def plot_matrix_thresholds(region, plot_base, matrix, solar_values, wind_values,
     elif '_intra' in save_name:
         n_levels = np.arange(0,20,1)
         c_fmt = '%3.1f'
-        ylab = "intra-annual variability\n(% mean annual load)"
+        ylab = "intra-annual variability\n(% load)"
         min_and_max = [2, 8]
     elif 'QuadR' in save_name:
         n_levels = np.arange(-10,10,1)
         c_fmt = '%1.1f'
-        ylab = "$\sigma$ residual load of peak\nload hours (% mean annual load)"
+        ylab = "$\sigma$ residual load of peak\nload hours (% load)"
         #min_and_max = [-6, 1]
 
     # Clip colormap before yellow high values so white
@@ -126,40 +130,80 @@ def plot_matrix_thresholds(region, plot_base, matrix, solar_values, wind_values,
     top = 0.85
     cmapShort = matplotlib.colors.ListedColormap(cmapBig(np.linspace(0.0, top, int(512*top))))
 
-    if len(min_and_max) == 0:
-        im = ax.imshow(matrix, interpolation='none', origin='lower', cmap=cmapShort)
-    else:
-        im = ax.imshow(matrix, interpolation='none', origin='lower', vmin=min_and_max[0], vmax=min_and_max[1], cmap=cmapShort)
-
-    cs = ax.contour(matrix, n_levels, colors='w')
-    # inline labels
-    ax.clabel(cs, inline=1, fontsize=12, fmt=c_fmt)
-
-    wind_labs, solar_labs = [], []
-    for v in wind_values:
-        if int(v*4)==v*4:
-            wind_labs.append(f"{int(v*100)}%")
+    ims = []
+    css = []
+    cnt = 0
+    for matrix, title in zip(mx_ary, titles):
+        if len(min_and_max) == 0:
+            im = axs[cnt].imshow(matrix, interpolation='none', origin='lower', cmap=cmapShort)
         else:
-            wind_labs.append('')
-    for v in solar_values:
-        if int(v*4)==v*4:
-            solar_labs.append(f"{int(v*100)}%")
+            im = axs[cnt].imshow(matrix, interpolation='none', origin='lower', vmin=min_and_max[0], vmax=min_and_max[1], cmap=cmapShort)
+        ims.append(im)
+
+        cs = axs[cnt].contour(matrix, n_levels, colors='w')
+        css.append(cs)
+        # inline labels
+        axs[cnt].clabel(cs, inline=1, fontsize=12, fmt=c_fmt)
+
+        wind_labs, solar_labs = [], []
+        for v in wind_values:
+            if int(v*4)==v*4:
+                wind_labs.append(f"{int(v*100)}%")
+            else:
+                wind_labs.append('')
+        for v in solar_values:
+            if int(v*4)==v*4:
+                solar_labs.append(f"{int(v*100)}%")
+            else:
+                solar_labs.append('')
+        axs[cnt].xaxis.set_major_locator(matplotlib.ticker.FixedLocator([0, 25, 50, 75, 100]))
+        axs[cnt].xaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(xmax=100, decimals=0))
+        axs[cnt].yaxis.set_major_locator(matplotlib.ticker.FixedLocator([0, 25, 50, 75, 100]))
+        axs[cnt].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(xmax=100, decimals=0))
+        #my_ticks = np.arange(0, 101, 5)
+        #my_labs = ['' for _ in range(len(my_ticks))]
+        #my_labs[0] = '0%'
+        #my_labs[5] = '25%'
+        #my_labs[10] = '50%'
+        #my_labs[15] = '75%'
+        #my_labs[20] = '100%'
+        #axs[cnt].set_xticks(my_ticks, my_labs)
+        #axs[cnt].set_yticks(my_ticks, my_labs)
+        ##axs[cnt].set_xticks(range(len(wind_values)), wind_labs, rotation=90)
+        plt.setp( axs[cnt].xaxis.get_majorticklabels(), rotation=40 )
+        # Adding X label below with one big overlaid axis
+        #axs[cnt].set_xlabel("wind generation\n(% load)")
+        if cnt == 0:
+            axs[cnt].set_ylabel("solar generation (% load)")
         else:
-            solar_labs.append('')
-    plt.xticks(range(len(wind_values)), wind_labs, rotation=90)
-    plt.yticks(range(len(solar_values)), solar_labs)
-    plt.xlabel("wind generation\n(% mean annual load)")
-    plt.ylabel("solar generation\n(% mean annual load)")
-    cbar = ax.figure.colorbar(im)
-    cbar.ax.set_ylabel(ylab)
-    dec = 0
-    #if region == 'NYISO' or '_inter' in save_name:
-    #    dec = 1
-    cbar.ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(xmax=100, decimals=dec))
-    plt.title(title)
+            solar_labs = ['' for i in range(len(solar_values))]
+        #axs[cnt].set_yticks(range(len(solar_values)), solar_labs)
+        if cnt + 1 == len(axs):
+            #cbar = axs[cnt].figure.colorbar(im)
+            #cbar.ax.set_ylabel(ylab)
+            #dec = 0
+            #cbar.ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(xmax=100, decimals=dec))
+
+            fig.subplots_adjust(right=0.88)
+            cbar_ax = fig.add_axes([0.89, 0.25, 0.02, 0.65])
+            cbar = fig.colorbar(ims[-1], cax=cbar_ax)
+            cbar.ax.set_ylabel(ylab)
+            dec = 0
+            cbar.ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(xmax=100, decimals=dec))
+
+        axs[cnt].set_title(title)
+        cnt += 1
     #plt.tight_layout()
-    plt.subplots_adjust(left=0.14, bottom=0.25, right=0.88, top=0.94)
+    #plt.subplots_adjust(left=0.14, bottom=0.25, right=0.88, top=0.9)
+    plt.subplots_adjust(left=0.09, bottom=0.265, top=0.9)
 
+    # SHARED X AXIS LABEL
+    # https://stackoverflow.com/questions/16150819/common-xlabel-ylabel-for-matplotlib-subplots/53172335
+    # add a big axis, hide frame
+    ax = fig.add_subplot(111, frameon=False)
+    # hide tick and tick label of the big axis
+    plt.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
+    ax.set_xlabel("wind generation (% load)", labelpad=21)
 
     plt.savefig(f"{plot_base}/{region}_{save_name}.{TYPE}")
     plt.clf()
@@ -175,8 +219,8 @@ def plot_matrix_thresholds(region, plot_base, matrix, solar_values, wind_values,
     #im = ax.imshow(m_nan,interpolation='none',origin='lower',vmin=cb_range[0],vmax=cb_range[1])
     #plt.xticks(range(len(wind_values)), wind_labs, rotation=90)
     #plt.yticks(range(len(solar_values)), solar_labs)
-    #plt.xlabel("wind generation\n(% mean annual load)")
-    #plt.ylabel("solar generation\n(% mean annual load)")
+    #plt.xlabel("wind generation\n(% load)")
+    #plt.ylabel("solar generation\n(% load)")
     #cbar = ax.figure.colorbar(im)
     #cbar.ax.set_ylabel(ylab)
     #cbar.ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(xmax=100, decimals=dec))
@@ -254,14 +298,20 @@ plot_base = f'plots/_plots_{steps}x{steps}_{extra}'
 if not os.path.exists(plot_base):
     os.makedirs(plot_base)
 
-im = return_file_info_map(region)
 
 
 mapper = OrderedDict()
-mapper['nom'] = [DATE, 'NOM', '']
-mapper['detrend'] = [DATE, 'DT', '']
-#mapper['TMY'] = [DATE, 'TMY', '_TMY']
-#mapper['plus1'] = [DATE, 'PLUS1', '']
+mapper['nom'] = [DATE, 'NOM', '', region]
+mapper['detrend'] = [DATE, 'DT', '', region]
+#mapper['TMY'] = [DATE, 'TMY', '_TMY', region]
+#mapper['plus1'] = [DATE, 'PLUS1', '', region]
+
+if region == 'ALL':
+    mapper = OrderedDict()
+    mapper['ERCOT'] = [DATE, 'DT', '', 'ERCOT']
+    mapper['PJM'] = [DATE, 'DT', '', 'PJM']
+    mapper['NYISO'] = [DATE, 'DT', '', 'NYISO']
+    mapper['France'] = [DATE, 'DT', '', 'FR']
 
 
 
@@ -269,7 +319,7 @@ ms = OrderedDict() # Matrices
 
 for name, info in mapper.items():
     print(name, info)
-    pkl_file = f'pkls/pkl_{info[0]}{info[1]}_{steps}x{steps}_{region}_hrs{HOURS_PER_YEAR}_nYrs{N_YEARS}{info[2]}'
+    pkl_file = f'pkls/pkl_{info[0]}{info[1]}_{steps}x{steps}_{info[3]}_hrs{HOURS_PER_YEAR}_nYrs{N_YEARS}{info[2]}'
     
     
     
@@ -329,19 +379,35 @@ for name, info in mapper.items():
 
 
 # Normal plots
-plot_matrix_thresholds(region, plot_base, ms['nom'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_NOM', f'{region}: annual norm.')
-if 'TMY' in mapper.keys():
-    plot_matrix_thresholds(region, plot_base, ms['TMY'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_TMY')
-    plot_matrix_thresholds(region, plot_base, ms['TMY'] - ms['nom'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_TMY-Nom')
-if 'plus1' in mapper.keys():
-    plot_matrix_thresholds(region, plot_base, ms['plus1'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_Plus1')
-    plot_matrix_thresholds(region, plot_base, ms['plus1'] - ms['nom'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_Rand-Nom')
-if 'detrend' in mapper.keys():
-    plot_matrix_thresholds(region, plot_base, ms['detrend'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_DT', f'{region}: detrended')
-    plot_matrix_thresholds(region, plot_base, ms['detrend'] - ms['nom'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_DT-Nom', f'{region}: detrended - annual norm.')
+#plot_matrix_thresholds(region, plot_base, ms['nom'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_NOM', f'{region}: annual norm.')
+#if 'TMY' in mapper.keys():
+#    plot_matrix_thresholds(region, plot_base, ms['TMY'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_TMY')
+#    plot_matrix_thresholds(region, plot_base, ms['TMY'] - ms['nom'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_TMY-Nom')
+#if 'plus1' in mapper.keys():
+#    plot_matrix_thresholds(region, plot_base, ms['plus1'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_Plus1')
+#    plot_matrix_thresholds(region, plot_base, ms['plus1'] - ms['nom'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_Rand-Nom')
+#if 'detrend' in mapper.keys():
+#    plot_matrix_thresholds(region, plot_base, ms['detrend'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_DT', f'{region}: detrended')
+#    plot_matrix_thresholds(region, plot_base, ms['detrend'] - ms['nom'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_DT-Nom', f'{region}: detrended - annual norm.')
 
 
 #idx_range = [0, 50]
 #for alt_idx in [0, 25, 50]:
 #    for resource in ['wind', 'solar']:
 #        plot_matrix_slice(region, plot_base, ms, idx_range, alt_idx, f'alt_idx_{alt_idx}', resource)
+
+
+# Testing array of inputs
+if region == 'ALL':
+    #ms_ary = [ ms['nom'], ms['detrend'],]# ms['detrend'] - ms['nom'] ]
+    #titles = [ f'{region}: annual norm.', f'{region}: detrended',]# f'{region}: detrended - annual norm.' ]
+    ms_ary, titles = [], []
+    for k, v in ms.items():
+        titles.append(k)
+        ms_ary.append(v)
+    plot_matrix_thresholds(region, plot_base, ms_ary, solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_ALL', titles)
+
+
+
+
+

@@ -43,6 +43,7 @@
 DATE="20210122v1"
 HOURS=10
 YEARS=10
-for REGION in "ERCOT" "NYISO" "PJM" "FR"; do
+#for REGION in "ERCOT" "NYISO" "PJM" "FR"; do
+for REGION in "ALL"; do
     python plotting.py ${REGION} ${DATE} "DUMMY" ${HOURS} ${YEARS} "Jan23Detrend"
 done
