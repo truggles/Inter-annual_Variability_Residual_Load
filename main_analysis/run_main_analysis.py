@@ -76,33 +76,33 @@ def plot_matrix_thresholds(region, plot_base, matrix, solar_values, wind_values,
     if 'RL_mean' in save_name:
         n_levels = np.arange(0,200,10)
         c_fmt = '%3.0f'
-        ylab = "$\mu$ peak residual load\n(% mean annual load)"
+        ylab = "$\mu$ peak residual load\n(% mean load)"
         min_and_max = [100, 170]
     elif 'RL_std' in save_name:
         n_levels = np.arange(0,15,0.5)
         c_fmt = '%1.1f'
-        ylab = "$\sigma$ peak residual load\n(% mean annual load)"
+        ylab = "$\sigma$ peak residual load\n(% mean load)"
         min_and_max = [4, 10]
     elif 'RL_50pct' in save_name:
         n_levels = np.arange(0,50,2.5)
         c_fmt = '%1.1f'
-        ylab = "mid-50% range peak residual load\n(% mean annual load)"
+        ylab = "mid-50% range peak residual load\n(% mean load)"
     elif 'RL_95pct' in save_name:
         n_levels = np.arange(0,50,5)
         c_fmt = '%1.1f'
-        ylab = "mid-95% range peak residual load\n(% mean annual load)"
+        ylab = "mid-95% range peak residual load\n(% mean load)"
     elif 'RL_Mto97p5pct' in save_name:
         n_levels = np.arange(0,50,2.5)
         c_fmt = '%1.1f'
-        ylab = "50-97.5% range peak residual load\n(% mean annual load)"
+        ylab = "50-97.5% range peak residual load\n(% mean load)"
     elif 'PL_mean' in save_name:
         n_levels = np.arange(-100,200,20)
         c_fmt = '%3.0f'
-        ylab = "$\mu$ residual load of peak\nload hours (% mean annual load)"
+        ylab = "$\mu$ residual load of peak\nload hours (% mean load)"
     elif 'PL_std' in save_name:
         n_levels = np.arange(0,100,5)
         c_fmt = '%1.0f'
-        ylab = "$\sigma$ residual load of peak\nload hours (% mean annual load)"
+        ylab = "$\sigma$ residual load of peak\nload hours (% mean load)"
     elif '_mean' in save_name: # else if so gets solar and wind means
         n_levels = np.arange(0,200,10)
         c_fmt = '%3.0f'
@@ -116,17 +116,17 @@ def plot_matrix_thresholds(region, plot_base, matrix, solar_values, wind_values,
     elif '_inter' in save_name:
         n_levels = np.arange(0,20,1)
         c_fmt = '%3.1f'
-        ylab = "inter-annual variability\n(% mean annual load)"
+        ylab = "inter-annual variability\n(% mean load)"
         min_and_max = [3, 10]
     elif '_intra' in save_name:
         n_levels = np.arange(0,20,1)
         c_fmt = '%3.1f'
-        ylab = "intra-annual variability\n(% mean annual load)"
+        ylab = "intra-annual variability\n(% mean load)"
         min_and_max = [2, 8]
     elif 'QuadR' in save_name:
         n_levels = np.arange(-10,10,1)
         c_fmt = '%1.1f'
-        ylab = "$\sigma$ residual load of peak\nload hours (% mean annual load)"
+        ylab = "$\sigma$ residual load of peak\nload hours (% mean load)"
         #min_and_max = [-6, 1]
 
     # Clip colormap before yellow high values so white
@@ -157,8 +157,8 @@ def plot_matrix_thresholds(region, plot_base, matrix, solar_values, wind_values,
             solar_labs.append('')
     plt.xticks(range(len(wind_values)), wind_labs, rotation=90)
     plt.yticks(range(len(solar_values)), solar_labs)
-    plt.xlabel("wind generation\n(% mean annual load)")
-    plt.ylabel("solar generation\n(% mean annual load)")
+    plt.xlabel("wind generation\n(% mean load)")
+    plt.ylabel("solar generation\n(% mean load)")
     cbar = ax.figure.colorbar(im)
     cbar.ax.set_ylabel(ylab)
     dec = 0
@@ -184,8 +184,8 @@ def plot_matrix_thresholds(region, plot_base, matrix, solar_values, wind_values,
     #im = ax.imshow(m_nan,interpolation='none',origin='lower',vmin=cb_range[0],vmax=cb_range[1])
     #plt.xticks(range(len(wind_values)), wind_labs, rotation=90)
     #plt.yticks(range(len(solar_values)), solar_labs)
-    #plt.xlabel("wind generation\n(% mean annual load)")
-    #plt.ylabel("solar generation\n(% mean annual load)")
+    #plt.xlabel("wind generation\n(% mean load)")
+    #plt.ylabel("solar generation\n(% mean load)")
     #cbar = ax.figure.colorbar(im)
     #cbar.ax.set_ylabel(ylab)
     #cbar.ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(xmax=100, decimals=dec))
@@ -324,11 +324,11 @@ def load_duration_curve_and_PDF_plots(dfs, save_name, wind_install_cap, solar_in
     axs[0].set_xlim(-0.5, 100)
     #axs[0].set_ylim(0, axs[0].get_ylim()[1])
     axs[0].set_ylim(0, 200)
-    axs[0].set_ylabel('residual load\n(% mean annual load)')
+    axs[0].set_ylabel('residual load\n(% mean load)')
     axs[0].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(xmax=100, decimals=0))
     axs[0].set_xlabel('operating duration (% of year)')
     #axs[1].yaxis.grid(True)
-    axs[1].set_ylabel('residual load\n(% mean annual load)')
+    axs[1].set_ylabel('residual load\n(% mean load)')
     axs[1].set_xlabel('hours / bin')
     axs[1].set_xlim(0, good_max * 1.2)
     axs[1].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(xmax=100, decimals=0))
@@ -359,7 +359,7 @@ def PDF_plots(dfs, save_name, wind_install_cap, solar_install_cap, cnt, base, ge
 
 
     plt.subplots_adjust(wspace=0.4)
-    ax.set_xlabel('residual load\n(% mean annual load)')
+    ax.set_xlabel('residual load\n(% mean load)')
     ax.set_ylabel('hours / bin')
     #ax.set_ylim(0, good_max * 1.2)
     ax.set_ylim(0, 600)
@@ -421,7 +421,7 @@ def plot_rl_box(rl_vects, years, save_name, wind_install_cap, solar_install_cap,
     axs[0].set_xticklabels(years)
     plt.setp(axs[0].get_xticklabels(), rotation=90)
     axs[0].yaxis.grid(True)
-    axs[0].set_ylabel('peak residual load\n(% mean annual load)')
+    axs[0].set_ylabel('peak residual load\n(% mean load)')
     axs[0].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(xmax=1, decimals=0))
     axs[0].set_ylim(0.8, 2.)
     if 'hourly' in kwargs:
@@ -437,7 +437,7 @@ def plot_rl_box(rl_vects, years, save_name, wind_install_cap, solar_install_cap,
         mus.append(np.mean(row))
 
     if not 'hourly' in kwargs:
-        axs[0].plot( np.linspace(0.5, len(rl_vects) + 0.5, 100 ), np.ones(100), 'k--', label='mean annual load')
+        axs[0].plot( np.linspace(0.5, len(rl_vects) + 0.5, 100 ), np.ones(100), 'k--', label='mean load')
         axs[0].legend(loc='lower center')
     
     #bplot2 = axs[1].boxplot(np.array(rl_vects).flatten(), whis=[5, 95], showfliers=True, patch_artist=True, medianprops=medianprops)
@@ -449,7 +449,7 @@ def plot_rl_box(rl_vects, years, save_name, wind_install_cap, solar_install_cap,
         patch.set_facecolor('lightblue')
 
     if not 'hourly' in kwargs:
-        axs[1].plot( np.linspace(0.5, 1.5, 100 ), np.ones(100), 'k--', label='mean annual load')
+        axs[1].plot( np.linspace(0.5, 1.5, 100 ), np.ones(100), 'k--', label='mean load')
 
     # these are matplotlib.patch.Patch properties
     props = dict(boxstyle='round', facecolor='wheat')
@@ -543,7 +543,7 @@ def make_threshold_hist(vect, save_name, cnt, base, gens):
         y_lim = ax.get_ylim()[1]
         ax.plot(np.ones(10)*(mean), np.linspace(0, y_lim*1.2, 10), 'r--', label=f'mean: {round(mean,1)}%') # histtype=u'step', linewidth=4)
         ax.plot(np.ones(10)*(mean+std), np.linspace(0, y_lim*1.2, 10), 'b--', label=f'$\sigma$: {round(std,1)}%') # histtype=u'step', linewidth=4)
-        # Below values are w.r.t. to ERCOT's 2019 mean annual load of 44 GW
+        # Below values are w.r.t. to ERCOT's 2019 mean load of 44 GW
         #ax.plot(np.ones(10)*(mean), np.linspace(0, y_lim*1.2, 10), 'r--', label=f'mean: {round(mean,1)}% (73 GW)') # histtype=u'step', linewidth=4)
         #ax.plot(np.ones(10)*(mean+std), np.linspace(0, y_lim*1.2, 10), 'b--', label=f'$\sigma$: {round(std,1)}% (1.5 GW)') # histtype=u'step', linewidth=4)
         ax.plot(np.ones(10)*(mean-std), np.linspace(0, y_lim*1.2, 10), 'b--', label='_nolabel_') # histtype=u'step', linewidth=4)
@@ -656,7 +656,7 @@ print(f"Test Sensitivity: {TEST_SENSITIVITY}")
 ### HERE
 
 TYPE = 'png'
-#TYPE = 'pdf'
+TYPE = 'pdf'
 
 assert(METHOD in ['NOM', 'TMY', 'PLUS1', 'DT']), f"You selected an invalide METHOD: {METHOD}"
 
