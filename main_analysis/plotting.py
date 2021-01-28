@@ -70,6 +70,11 @@ def plot_matrix_thresholds(region, plot_base, mx_ary, solar_values, wind_values,
         c_fmt = '%3.0f'
         ylab = "$\mu$ peak residual load\n(% mean load)"
         min_and_max = [100, 170]
+    elif 'RL_mu_100pct' in save_name:
+        n_levels = np.arange(0,60,5)
+        c_fmt = '%1.0f'
+        ylab = "range in annual mean peak\nresidual load (% mean load)"
+        min_and_max = [0, 40]
     elif 'RL_std' in save_name:
         n_levels = np.arange(0,15,0.5)
         c_fmt = '%1.1f'
@@ -138,7 +143,10 @@ def plot_matrix_thresholds(region, plot_base, mx_ary, solar_values, wind_values,
         if len(min_and_max) == 0:
             im = axs[cnt].imshow(matrix, interpolation='none', origin='lower', cmap=cmapShort)
         else:
-            im = axs[cnt].imshow(matrix, interpolation='none', origin='lower', vmin=min_and_max[0], vmax=min_and_max[1], cmap=cmapShort)
+            if 'solar_mean' in save_name:
+                im = axs[cnt].imshow(matrix, interpolation='none', aspect='auto', origin='lower', vmin=min_and_max[0], vmax=min_and_max[1], cmap=cmapShort)
+            else:
+                im = axs[cnt].imshow(matrix, interpolation='none', origin='lower', vmin=min_and_max[0], vmax=min_and_max[1], cmap=cmapShort)
         ims.append(im)
 
         cs = axs[cnt].contour(matrix, n_levels, colors='w')
@@ -161,6 +169,8 @@ def plot_matrix_thresholds(region, plot_base, mx_ary, solar_values, wind_values,
         axs[cnt].xaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(xmax=100, decimals=0))
         axs[cnt].yaxis.set_major_locator(matplotlib.ticker.FixedLocator([0, 25, 50, 75, 100]))
         axs[cnt].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(xmax=100, decimals=0))
+        if 'solar_mean' in save_name:
+            axs[cnt].set_ylim(0, 51)
         #my_ticks = np.arange(0, 101, 5)
         #my_labs = ['' for _ in range(len(my_ticks))]
         #my_labs[0] = '0%'
@@ -478,6 +488,7 @@ ms['RL_mean'] = OrderedDict()
 ms['wind_mean'] = OrderedDict()
 ms['solar_mean'] = OrderedDict()
 ms['inter'] = OrderedDict()
+ms['RL_mu_100pct'] = OrderedDict()
 
 for name, info in mapper.items():
     print(name, info)
@@ -495,6 +506,7 @@ for name, info in mapper.items():
     #m_rl_mean, m_rl_std = [], [] # Mean Residual Load, STD RL
     #m_rl_50pct, m_rl_95pct = [], [] # Other spreads for RL
     #m_rl_Mto97p5pct = []
+    m_rl_100pct = []
     m_w_mean, m_s_mean = [], [] # mean wind CFs, mean solar CFs
     #m_pl_mean, m_pl_std = [], [] # Mean residual load of the original peak load values
     #intra, inter = [], [] # Interannual vs. intra-annual variability check
@@ -506,6 +518,7 @@ for name, info in mapper.items():
         #m_rl_50pct.append([])
         #m_rl_95pct.append([])
         #m_rl_Mto97p5pct.append([])
+        m_rl_100pct.append([])
         m_w_mean.append([])
         m_s_mean.append([])
         #m_pl_mean.append([])
@@ -528,12 +541,15 @@ for name, info in mapper.items():
             #m_pl_mean[i].append(np.mean(pls)*100)
             #m_pl_std[i].append(np.std(pls)*100)
             #intra[i].append(np.mean(study_regions[str(round(solar_install_cap,2))][str(round(wind_install_cap,2))][4])*100.)
-            inter[i].append(np.std(study_regions[str(round(solar_install_cap,2))][str(round(wind_install_cap,2))][5])*100.)
+            mus = study_regions[str(round(solar_install_cap,2))][str(round(wind_install_cap,2))][5]
+            inter[i].append(np.std(mus)*100.)
+            m_rl_100pct[i].append( (np.max(mus) - np.min(mus)) * 100.)
 
     ms['inter'][name] = np.array(inter)
     ms['RL_mean'][name] = np.array(m_rl_mean)
     ms['solar_mean'][name] = np.array(m_s_mean)
     ms['wind_mean'][name] = np.array(m_w_mean)
+    ms['RL_mu_100pct'][name] = np.array(m_rl_100pct)
 
 #plot_matrix_thresholds(region, plot_base, m_rl_mean, solar_gen_steps, wind_gen_steps, f'top_20_RL_mean')
 #plot_matrix_thresholds(region, plot_base, m_rl_std, solar_gen_steps, wind_gen_steps, f'top_20_RL_std')
@@ -557,10 +573,6 @@ for name, info in mapper.items():
 #    plot_matrix_thresholds(region, plot_base, ms['detrend'] - ms['nom'], solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_inter_DT-Nom', f'{region}: detrended - annual norm.')
 
 
-#idx_range = [0, 50]
-#for alt_idx in [0, 25, 50]:
-#    for resource in ['wind', 'solar']:
-#        plot_matrix_slice(region, plot_base, ms, idx_range, alt_idx, f'alt_idx_{alt_idx}', resource)
 
 
 # Testing array of inputs
