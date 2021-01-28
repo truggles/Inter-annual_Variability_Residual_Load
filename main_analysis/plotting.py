@@ -10,7 +10,6 @@ from scipy import stats
 from scipy.stats import rankdata, normaltest
 from collections import OrderedDict
 import pickle
-from glob import glob
 import os
 from shutil import copy2
 import copy
@@ -59,7 +58,10 @@ def plot_matrix_thresholds(region, plot_base, mx_ary, solar_values, wind_values,
     plt.close()
     matplotlib.rcParams.update({'font.size': 14})
     cols = len(mx_ary)
-    fig, axs = plt.subplots(figsize=(2.8*cols, 3.2), ncols=cols, sharey=True)
+    w = cols if cols > 1 else cols * 1.5
+    fig, axs = plt.subplots(figsize=(2.8*w, 3.2), ncols=cols, sharey=True)
+    if cols == 1:
+        axs = [axs,]
 
     # Contours
     min_and_max = []
@@ -108,8 +110,8 @@ def plot_matrix_thresholds(region, plot_base, mx_ary, solar_values, wind_values,
         c_fmt = '%3.1f'
         ylab = "inter-annual variability\n(% mean load)"
         min_and_max = [3, 10]
-        if 'Nom' in save_name:
-            n_levels = np.arange(-3,3,.2)
+        if 'Diff' in save_name:
+            n_levels = np.arange(-3,3,.5)
             c_fmt = '%3.2f'
             min_and_max = [-3, 3]
     elif '_intra' in save_name:
@@ -457,17 +459,17 @@ if not os.path.exists(plot_base):
 
 
 mapper = OrderedDict()
-mapper['nom'] = [DATE, 'NOM', '', region]
-mapper['detrend'] = [DATE, 'DT', '', region]
-#mapper['TMY'] = [DATE, 'TMY', '_TMY', region]
-#mapper['plus1'] = [DATE, 'PLUS1', '', region]
+mapper['Baseline Mthd.'] = [DATE, 'DTNOM', '', region]
+#mapper['detrend'] = [DATE, 'DTNOM', '', region]
+mapper['Avg. Climate'] = [DATE, 'DTTMY', '', region]
+#mapper['plus1'] = [DATE, 'DTPLUS1', '', region]
 
 if region == 'ALL':
     mapper = OrderedDict()
-    mapper['ERCOT'] = [DATE, 'DT', '', 'ERCOT']
-    mapper['PJM'] = [DATE, 'DT', '', 'PJM']
-    mapper['NYISO'] = [DATE, 'DT', '', 'NYISO']
-    mapper['France'] = [DATE, 'DT', '', 'FR']
+    mapper['ERCOT'] = [DATE, 'DTNOM', '', 'ERCOT']
+    mapper['PJM'] = [DATE, 'DTNOM', '', 'PJM']
+    mapper['NYISO'] = [DATE, 'DTNOM', '', 'NYISO']
+    mapper['France'] = [DATE, 'DTNOM', '', 'FR']
 
 
 
@@ -575,6 +577,19 @@ if region == 'ALL':
             plot_matrix_thresholds_sq(region, plot_base, ms_ary, solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_{k1}_ALL_sq', titles)
 
 
+else: # (not ALL)
+    for k1, v1 in ms.items():
+        ms_ary, titles = [], []
+        for k, v in v1.items():
+            titles.append(k)
+            ms_ary.append(v)
+        plot_matrix_thresholds(region, plot_base, ms_ary, solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_{k1}_ALL', titles)
+        #if 'inter' in k1:
+        #    plot_matrix_thresholds_sq(region, plot_base, ms_ary, solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_{k1}_ALL_sq', titles)
 
 
+        ms_ary, titles = [], []
+        titles.append(r'$\Delta$(Baseline - Climate)')
+        ms_ary.append(v1['Baseline Mthd.'] - v1['Avg. Climate'])
+        plot_matrix_thresholds(region, plot_base, ms_ary, solar_gen_steps, wind_gen_steps, f'top_{HOURS_PER_YEAR}_{k1}_ALL_Diff', titles)
 
