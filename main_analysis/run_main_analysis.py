@@ -32,13 +32,13 @@ def get_peak_demand_hour_indices(df):
 
 
 
-def get_dem_wind_solar(im, METHOD):
+def get_dem_wind_solar(im, DEM_METHOD, RES_METHOD):
 
     rep = '.csv'
-    if METHOD == 'TMY':
+    if RES_METHOD == 'TMY':
         rep = '_TMY2.csv' # if wanting TMY, this will change the file name
     rep_load = '.csv'
-    if METHOD == 'DT':
+    if DEM_METHOD == 'DT':
         rep_load = '_expDT.csv'
     demand = pd.read_csv('../'+im['demand'][0].replace('.csv', rep_load), header=im['demand'][1])
     wind = pd.read_csv('../'+im['wind'][0].replace('.csv', rep), header=im['wind'][1])
@@ -215,12 +215,12 @@ def get_annual_CF(df, name, im, year):
 
 
 
-def get_annual_df(year, df, tgt, im, METHOD):
+def get_annual_df(year, df, tgt, im, DEM_METHOD):
 
     df2 = df.loc[ df[ im[tgt][3]] == year ].copy()
 
     # Normalize
-    if tgt == 'demand' and METHOD != 'DT':
+    if tgt == 'demand' and DEM_METHOD != 'DT':
         df2.loc[:, im[tgt][2]] = df2.loc[:, im[tgt][2]]/np.mean(df2.loc[:, im[tgt][2]])
     return df2
 
@@ -623,30 +623,37 @@ else:
 
 
 if len(sys.argv) > 3:
-    METHOD = sys.argv[3]
+    DEM_METHOD = sys.argv[3]
 else:
-    METHOD = "Nom"
+    DEM_METHOD = "DT" # DT (detrended is now the default method)
 
 
 if len(sys.argv) > 4:
-    HOURS_PER_YEAR = int(sys.argv[4])
+    RES_METHOD = sys.argv[4]
+else:
+    RES_METHOD = "NOM"
+
+
+if len(sys.argv) > 5:
+    HOURS_PER_YEAR = int(sys.argv[5])
 else:
     HOURS_PER_YEAR = 20
 
-if len(sys.argv) > 5:
-    N_YEARS = int(sys.argv[5])
+if len(sys.argv) > 6:
+    N_YEARS = int(sys.argv[6])
 else:
     N_YEARS = -1
 
 
-if len(sys.argv) > 6:
+if len(sys.argv) > 7:
     TEST_SENSITIVITY = True
 else:
     TEST_SENSITIVITY = False
 
 print(f"Region: {region}")
 print(f"Date: {DATE}")
-print(f"Method: {METHOD}")
+print(f"Demand Method: {DEM_METHOD}")
+print(f"Resource Method: {RES_METHOD}")
 print(f"Peak Hours: {HOURS_PER_YEAR}")
 print(f"N Years: {N_YEARS}")
 print(f"Test Sensitivity: {TEST_SENSITIVITY}")
@@ -658,20 +665,27 @@ print(f"Test Sensitivity: {TEST_SENSITIVITY}")
 TYPE = 'png'
 TYPE = 'pdf'
 
-assert(METHOD in ['NOM', 'TMY', 'PLUS1', 'DT']), f"You selected an invalide METHOD: {METHOD}"
+assert(DEM_METHOD in ['NOM', 'DT']), f"You selected an invalide Demand method (DEM_METHOD): {DEM_METHOD}"
+assert(RES_METHOD in ['NOM', 'TMY', 'PLUS1']), f"You selected an invalide Resource method (RES_METHOD): {RES_METHOD}"
 
-##########################################################################################
-### Different METHODS ###                                                                #
-# NOM = nominal wind and solar resources, w/ annual normalization                        #
-# DT = nominal wind and solar resources, w/ exponential detrending of load data          #
-# TMY = annual normalization & uses wind and solar profile averaged over many years      #
-# PLUS1 = annual normalization & uses wind and solar profiles from the following year    #
-##########################################################################################
+########################### METHODS ##########################
+#                                                            #
+### Different Demand Methods (DEM_METHODS) ###               #
+# NOM = annual normalization                                 #
+# DT = exponential detrending of load data                   #
+#                                                            #
+### Different Resource Methods (RES_METHODS) ###             #
+# NOM = nominal wind and solar resources                     #
+# TMY = wind and solar profile averaged over many years      #
+# PLUS1 = wind and solar profiles from the following year    #
+##############################################################
 
-if METHOD == 'TMY':
+if RES_METHOD == 'TMY':
     print("You must first create the TMY resource files with 'prep_TMY_wind_and_solar_profiles.ipynb'")
-if METHOD == 'DT':
-    print("You must first create the DT load files with 'sensitivity_analysis/detrend_load_data.ipynb'")
+
+# These have now been committed b/c they are the default method
+#if DEM_METHOD == 'DT':
+#    print("You must first create the DT load files with 'sensitivity_analysis/detrend_load_data.ipynb'")
 
 test_ordering = True
 #test_ordering = False
@@ -713,7 +727,7 @@ if N_YEARS > 0 and N_YEARS > len( years ):
     exit()
 
 if test_ordering:
-    demand, wind, solar = get_dem_wind_solar(im, METHOD)
+    demand, wind, solar = get_dem_wind_solar(im, DEM_METHOD, RES_METHOD)
     dfs = OrderedDict()
     peak_indices = {}
     print(f"Number of years scanned: {len(years)}")
@@ -730,7 +744,7 @@ if test_ordering:
 
         resource_year = year
         # Use an alternate resource year if this is selected
-        if METHOD == 'PLUS1':
+        if RES_METHOD == 'PLUS1':
             if calendar.isleap(year):
                 resource_year += 4
                 if resource_year > years[-1]:
@@ -745,9 +759,9 @@ if test_ordering:
                     resource_year += 1
             print(f"Demand year {year}; resource year {resource_year}; Demand is leap {calendar.isleap(year)}")
 
-        d_yr = get_annual_df(year, demand, 'demand', im, METHOD)
-        w_yr = get_annual_df(resource_year, wind, 'wind', im, METHOD)
-        s_yr = get_annual_df(resource_year, solar, 'solar', im, METHOD)
+        d_yr = get_annual_df(year, demand, 'demand', im, DEM_METHOD)
+        w_yr = get_annual_df(resource_year, wind, 'wind', im, DEM_METHOD)
+        s_yr = get_annual_df(resource_year, solar, 'solar', im, DEM_METHOD)
         d_yr.reset_index()
         w_yr.reset_index()
         s_yr.reset_index()
