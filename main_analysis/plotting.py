@@ -550,6 +550,9 @@ for name, info in mapper.items():
     ms['solar_mean'][name] = np.array(m_s_mean)
     ms['wind_mean'][name] = np.array(m_w_mean)
     ms['RL_mu_100pct'][name] = np.array(m_rl_100pct)
+    print("With zero wind and zero solar:")
+    for key in ms.keys():
+        print(f" --- {key}: {round(ms[key][name][0][0],2)}")
 
 #plot_matrix_thresholds(region, plot_base, m_rl_mean, solar_gen_steps, wind_gen_steps, f'top_20_RL_mean')
 #plot_matrix_thresholds(region, plot_base, m_rl_std, solar_gen_steps, wind_gen_steps, f'top_20_RL_std')
