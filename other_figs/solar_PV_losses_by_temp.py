@@ -25,16 +25,16 @@ def test_t(t, r=1000):
     g = r / 1000
     scf = g * ( 1 + k_1*np.log(g) + k_2*(np.log(g))**2 + a*(k_3+k_4*(np.log(g)) + k_5*(np.log(g))**2) + k_6*(a**2) ) 
     return (scf)
-t = np.arange(50)-10
+t = np.arange(50)-20
 b = test_t(t, 1000)
 slope = ((b[-1]-b[0])/b[0]*100)/(t[0]-t[-1]) 
 print (f"Slope: {round(slope,3)}% / degree C")
 
 fig, ax = plt.subplots(figsize=(4,3))
-ax.plot(t, b, label="adjustment to PV panel\nperformance based\non panel temperature")
+ax.plot(t, b, label="normalized power output")
 #for ti, bi in zip(t, b):
 #    print(ti, bi)
-ax.set_ylabel("PV panel performance\nadjustment factor")
+ax.set_ylabel("PV panel power output\n(normalized)")
 ax.set_xlabel("temperature (C)")
 lims = ax.get_ylim()
 ax.set_ylim(lims[0], lims[1]*1.05)
