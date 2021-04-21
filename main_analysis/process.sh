@@ -54,13 +54,14 @@
 ###############################
 ### Running default methods ###
 ###############################
-#DATE="20210127v1"
-#HOURS=10
-#YEARS=10
-#DEM_METHOD="DT"
-#RES_METHOD="NOM"
+DATE="20210520v2"
+HOURS=10
+YEARS=10
+DEM_METHOD="DT"
+RES_METHOD="NOM"
 #for REGION in "ERCOT" "NYISO" "PJM" "FR"; do
-#    for HOURS in 1 5 10; do
+#    #for HOURS in 1 5 10; do
+#    for HOURS in 10; do
 #        python run_main_analysis.py ${REGION} ${DATE}${DEM_METHOD}${RES_METHOD} ${DEM_METHOD} ${RES_METHOD} ${HOURS} ${YEARS} &
 #    done
 #done
@@ -70,11 +71,11 @@
 ############################
 ### Plotting             ###
 ############################
-DATE="20210127v1"
-HOURS=10
-YEARS=10
-#for REGION in "ERCOT" "NYISO" "PJM" "FR"; do
-#    python plotting.py ${REGION} ${DATE} "DUMMY" ${HOURS} ${YEARS} "${REGION}_Jan27ClimAndWeather"
+#DATE="20210127v1"
+#HOURS=10
+#YEARS=10
+##for REGION in "ERCOT" "NYISO" "PJM" "FR"; do
+##    python plotting.py ${REGION} ${DATE} "DUMMY" ${HOURS} ${YEARS} "${REGION}_Jan27ClimAndWeather"
 for REGION in "ALL"; do
-    python plotting.py ${REGION} ${DATE} "DUMMY" ${HOURS} ${YEARS} "Jan27"
+    python plotting.py ${REGION} ${DATE} "DUMMY" ${HOURS} ${YEARS} "Apr20"
 done

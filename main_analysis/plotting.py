@@ -65,11 +65,31 @@ def plot_matrix_thresholds(region, plot_base, mx_ary, solar_values, wind_values,
 
     # Contours
     min_and_max = []
-    if 'RL_mean' in save_name:
+    if 'RL_mean_max' in save_name:
+        n_levels = np.arange(0,200,10)
+        c_fmt = '%3.0f'
+        ylab = "$\mu$ peak residual load\n(% mean load)"
+        min_and_max = [100, 200]
+    elif 'RL_mean' in save_name:
         n_levels = np.arange(0,200,10)
         c_fmt = '%3.0f'
         ylab = "$\mu$ peak residual load\n(% mean load)"
         min_and_max = [100, 170]
+    elif 'RL_miss' in save_name:
+        n_levels = np.arange(-20,20,2)
+        c_fmt = '%3.0f'
+        ylab = "Under-supplied load\n(% mean load)"
+        min_and_max = [-10, 10]
+    elif 'RL_max' in save_name:
+        n_levels = np.arange(0,200,10)
+        c_fmt = '%3.0f'
+        ylab = "max peak residual load\n(% mean load)"
+        min_and_max = [100, 200]
+    elif 'RL_bias' in save_name:
+        n_levels = np.arange(-25,0,4)
+        c_fmt = '%3.0f'
+        ylab = "bias in $\mu$ peak residual load\n(% mean load)"
+        min_and_max = [-20, 0]
     elif 'RL_mu_100pct' in save_name:
         n_levels = np.arange(0,60,5)
         c_fmt = '%1.0f'
@@ -485,10 +505,14 @@ if region == 'ALL':
 
 ms = OrderedDict() # Matrices
 ms['RL_mean'] = OrderedDict()
+ms['RL_max'] = OrderedDict()
+ms['RL_mean_max'] = OrderedDict()
+ms['RL_bias'] = OrderedDict()
 ms['wind_mean'] = OrderedDict()
 ms['solar_mean'] = OrderedDict()
 ms['inter'] = OrderedDict()
 ms['RL_mu_100pct'] = OrderedDict()
+ms['RL_miss'] = OrderedDict()
 
 for name, info in mapper.items():
     print(name, info)
@@ -503,6 +527,8 @@ for name, info in mapper.items():
     
     
     m_rl_mean = []
+    m_rl_mean_max = []
+    m_rl_max = []
     #m_rl_mean, m_rl_std = [], [] # Mean Residual Load, STD RL
     #m_rl_50pct, m_rl_95pct = [], [] # Other spreads for RL
     #m_rl_Mto97p5pct = []
@@ -514,6 +540,8 @@ for name, info in mapper.items():
     for i, solar_install_cap in enumerate(solar_gen_steps):
         solar_gen = solar_gen_steps[i]
         m_rl_mean.append([])
+        m_rl_mean_max.append([])
+        m_rl_max.append([])
         #m_rl_std.append([])
         #m_rl_50pct.append([])
         #m_rl_95pct.append([])
@@ -529,6 +557,7 @@ for name, info in mapper.items():
             wind_gen = wind_gen_steps[j]
             rls = study_regions[str(round(solar_install_cap,2))][str(round(wind_install_cap,2))][0]
             m_rl_mean[i].append(np.mean(rls)*100)
+            m_rl_max[i].append(np.max(rls)*100)
             #m_rl_std[i].append(np.std(rls)*100)
             #m_rl_50pct[i].append( (np.percentile(rls, 75) - np.percentile(rls, 25))*100)
             #m_rl_95pct[i].append( (np.percentile(rls, 97.5) - np.percentile(rls, 2.5))*100)
@@ -544,12 +573,18 @@ for name, info in mapper.items():
             mus = study_regions[str(round(solar_install_cap,2))][str(round(wind_install_cap,2))][5]
             inter[i].append(np.std(mus)*100.)
             m_rl_100pct[i].append( (np.max(mus) - np.min(mus)) * 100.)
+            maxs = study_regions[str(round(solar_install_cap,2))][str(round(wind_install_cap,2))][6]
+            m_rl_mean_max[i].append( np.mean(maxs)*100. )
 
     ms['inter'][name] = np.array(inter)
     ms['RL_mean'][name] = np.array(m_rl_mean)
+    ms['RL_mean_max'][name] = np.array(m_rl_mean_max)
+    ms['RL_max'][name] = np.array(m_rl_max)
+    ms['RL_bias'][name] = np.array(m_rl_mean) - np.array(m_rl_max)
     ms['solar_mean'][name] = np.array(m_s_mean)
     ms['wind_mean'][name] = np.array(m_w_mean)
     ms['RL_mu_100pct'][name] = np.array(m_rl_100pct)
+    ms['RL_miss'][name] = ms['RL_max'][name] - ms['RL_mean_max'][name] - ms['inter'][name] * 2
     print("With zero wind and zero solar:")
     for key in ms.keys():
         print(f" --- {key}: {round(ms[key][name][0][0],2)}")

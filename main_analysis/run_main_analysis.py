@@ -591,10 +591,12 @@ def get_top_X_per_year(hours_per_year, years_used, dfs, peak_indices, wind_insta
             pls = np.append(pls, df_sort.loc[ peak_indices[year], 'RL' ].values)
     stds = []
     mus = []
+    maxs = []
     for row in rl_vects:
         stds.append(np.std(row))
         mus.append(np.mean(row))
-    return rls, w_cfs, s_cfs, pls, rl_vects, stds, mus, hours
+        maxs.append(np.max(row))
+    return rls, w_cfs, s_cfs, pls, rl_vects, stds, mus, hours, maxs
 
 
 
@@ -803,8 +805,8 @@ if test_ordering:
 
             # Get top 20 peak residual load hours for each combo
             hours_per_year = HOURS_PER_YEAR
-            rls, w_cfs, s_cfs, pls, rl_vects, stds, mus, hours = get_top_X_per_year(hours_per_year, years_used, dfs, peak_indices, wind_install_cap, solar_install_cap)
-            mapper[str(round(solar_gen,2))][str(round(wind_gen,2))] = [rls, w_cfs, s_cfs, pls, stds, mus]
+            rls, w_cfs, s_cfs, pls, rl_vects, stds, mus, hours, maxs = get_top_X_per_year(hours_per_year, years_used, dfs, peak_indices, wind_install_cap, solar_install_cap)
+            mapper[str(round(solar_gen,2))][str(round(wind_gen,2))] = [rls, w_cfs, s_cfs, pls, stds, mus, maxs]
 
 
 
