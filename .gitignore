@@ -4,3 +4,5 @@ data/*
 *__pycache__*
 *plots*
 *pkls*
+*.pdf
+*.png
