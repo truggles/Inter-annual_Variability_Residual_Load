@@ -134,7 +134,8 @@ def plot_matrix_thresholds(region, plot_base, mx_ary, solar_values, wind_values,
         n_levels = np.arange(0,20,1)
         c_fmt = '%3.1f'
         ylab = "inter-annual variability\n(% mean load)"
-        min_and_max = [3, 10]
+        #min_and_max = [3, 10]
+        min_and_max = [2, 7]
         if 'Diff' in save_name:
             n_levels = np.arange(-3,3,.5)
             c_fmt = '%3.2f'
@@ -143,7 +144,7 @@ def plot_matrix_thresholds(region, plot_base, mx_ary, solar_values, wind_values,
         n_levels = np.arange(0,20,1)
         c_fmt = '%3.1f'
         ylab = "intra-annual variability\n(% mean load)"
-        min_and_max = [2, 8]
+        min_and_max = [3, 10]
     elif 'QuadR' in save_name:
         n_levels = np.arange(-10,10,1)
         c_fmt = '%1.1f'
@@ -294,7 +295,8 @@ def plot_matrix_thresholds_sq(region, plot_base, mx_ary, solar_values, wind_valu
         n_levels = np.arange(0,20,1)
         c_fmt = '%3.1f'
         ylab = "inter-annual variability (% mean load)"
-        min_and_max = [3, 10]
+        #min_and_max = [3, 10]
+        min_and_max = [2, 7]
         if 'Nom' in save_name:
             n_levels = np.arange(-3,3,.2)
             c_fmt = '%3.2f'
@@ -496,10 +498,12 @@ mapper['Avg. Climate'] = [DATE, 'DTTMY', '', region]
 
 if region == 'ALL':
     mapper = OrderedDict()
-    mapper['ERCOT'] = [DATE, 'DTNOM', '', 'ERCOT']
-    mapper['PJM'] = [DATE, 'DTNOM', '', 'PJM']
-    mapper['NYISO'] = [DATE, 'DTNOM', '', 'NYISO']
-    mapper['France'] = [DATE, 'DTNOM', '', 'FR']
+    app = 'DTNOM'
+    app = 'EVNOM'
+    mapper['ERCOT'] = [DATE, app, '', 'ERCOT']
+    mapper['PJM'] = [DATE, app, '', 'PJM']
+    mapper['NYISO'] = [DATE, app, '', 'NYISO']
+    mapper['France'] = [DATE, app, '', 'FR']
 
 
 

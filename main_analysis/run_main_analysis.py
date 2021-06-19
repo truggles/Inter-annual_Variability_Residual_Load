@@ -40,6 +40,8 @@ def get_dem_wind_solar(im, DEM_METHOD, RES_METHOD):
     rep_load = '.csv'
     if DEM_METHOD == 'DT':
         rep_load = '_expDT.csv'
+    if DEM_METHOD == 'EV':
+        rep_load = '_expDT_plusEV.csv'
     demand = pd.read_csv('../'+im['demand'][0].replace('.csv', rep_load), header=im['demand'][1])
     wind = pd.read_csv('../'+im['wind'][0].replace('.csv', rep), header=im['wind'][1])
     solar = pd.read_csv('../'+im['solar'][0].replace('.csv', rep), header=im['solar'][1])
@@ -220,7 +222,7 @@ def get_annual_df(year, df, tgt, im, DEM_METHOD):
     df2 = df.loc[ df[ im[tgt][3]] == year ].copy()
 
     # Normalize
-    if tgt == 'demand' and DEM_METHOD != 'DT':
+    if tgt == 'demand' and DEM_METHOD not in ['DT', 'EV']:
         df2.loc[:, im[tgt][2]] = df2.loc[:, im[tgt][2]]/np.mean(df2.loc[:, im[tgt][2]])
     return df2
 
@@ -667,7 +669,7 @@ print(f"Test Sensitivity: {TEST_SENSITIVITY}")
 TYPE = 'png'
 TYPE = 'pdf'
 
-assert(DEM_METHOD in ['NOM', 'DT']), f"You selected an invalide Demand method (DEM_METHOD): {DEM_METHOD}"
+assert(DEM_METHOD in ['NOM', 'DT', 'EV']), f"You selected an invalide Demand method (DEM_METHOD): {DEM_METHOD}"
 assert(RES_METHOD in ['NOM', 'TMY', 'PLUS1']), f"You selected an invalide Resource method (RES_METHOD): {RES_METHOD}"
 
 ########################### METHODS ##########################

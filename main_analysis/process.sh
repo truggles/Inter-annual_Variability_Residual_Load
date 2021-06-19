@@ -55,9 +55,11 @@
 ### Running default methods ###
 ###############################
 DATE="20210520v2"
+DATE="20210521v1EV"
 HOURS=10
 YEARS=10
 DEM_METHOD="DT"
+DEM_METHOD="EV"
 RES_METHOD="NOM"
 #for REGION in "ERCOT" "NYISO" "PJM" "FR"; do
 #    #for HOURS in 1 5 10; do
@@ -77,5 +79,5 @@ RES_METHOD="NOM"
 ##for REGION in "ERCOT" "NYISO" "PJM" "FR"; do
 ##    python plotting.py ${REGION} ${DATE} "DUMMY" ${HOURS} ${YEARS} "${REGION}_Jan27ClimAndWeather"
 for REGION in "ALL"; do
-    python plotting.py ${REGION} ${DATE} "DUMMY" ${HOURS} ${YEARS} "Apr20"
+    python plotting.py ${REGION} ${DATE} "DUMMY" ${HOURS} ${YEARS} "Apr21EV"
 done
