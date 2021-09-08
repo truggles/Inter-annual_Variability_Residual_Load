@@ -10,6 +10,8 @@ source process.sh
 
 Comment out code after running.
 
+Alternatively, grab the already produced results files saved at: https://zenodo.org/record/5495664
+
 ## Plotting results
 
 Uncomment the section titled ``Plotting`` in `process.sh`, make sure DATE, HOURS, and YEARS are aligned with what was previously processed, and:
