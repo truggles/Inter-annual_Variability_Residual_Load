@@ -159,5 +159,5 @@ lims = ax.get_ylim()
 ax.set_ylim(lims[0], 2)
 plt.legend()
 plt.tight_layout()
-plt.savefig("wind_power_curve_NEW.pdf")
+plt.savefig("wind_power_curve.pdf")
 
