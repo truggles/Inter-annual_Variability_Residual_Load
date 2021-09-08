@@ -25,4 +25,8 @@ The specific data files used for the main analysis are:
 
 ## Detrended load data
 
-For the detrended load data used for the main analysis replace `.csv` with `_expDR.csv`
+For the detrended load data used for the main analysis replace `.csv` with `_expDT.csv`
+
+## For historical load + future EV forecase
+
+Replace `.csv` with `_expDT_plusEVX.csv`
