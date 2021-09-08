@@ -1,8 +1,10 @@
-
 # Demand data
 
+The notes below discuss the details of how the historical load data was downloaded and any small cleaning efforts to make the data usable. The resulting data is found in `Inter-annual_Variability_Residual_Load/data/`
+
+
 The raw demand files from NYISO and ERCOT are located in my Carnegie
-gDrive:
+gDrive (private):
  * `Reliability/Inputs/ERCOT_DEMAND_1998-2020.zip`
  * `Reliability/Inputs/NYISO_All_Data_2002-2019.zip`
 

@@ -5,6 +5,7 @@ Please cite: XXX
 
 ## Structure
 
+ * Documentation for downloading, cleaning, and detrending the historical load data in `load_data`
  * Defined shapefiles used for selecting the wind, solar, and temperature data from MERRA-2 found in `shape_files`
  * Documentation for analyzing results of the sensitivity analysis found in `sensitivity_analysis`
  * Documentation for the degree day and peak load temperature analysis found in `temperature_analysis`
