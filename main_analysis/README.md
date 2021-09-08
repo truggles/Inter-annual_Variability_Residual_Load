@@ -23,3 +23,14 @@ Comment out code after running.
 ## Input files
 
 All input files are located in `main_analysis/data`.
+
+## Values used in main analysis figures
+
+Located in `./fig_data`
+
+ * `inter` = inter-annual variability of peak load hours (fig. 5)
+ * `RL_mean` = mean residual load value from the 10 peak hours and 10 years (fig. 4)
+ * `solar_mean` = mean solar CF from the 10 peak hours and 10 years (fig. 8)
+ * `wind_mean` = mean wind CF from the 10 peak hours and 10 years (fig. 9)
+ * `RL_max` = single max residual load value across all ten years
+

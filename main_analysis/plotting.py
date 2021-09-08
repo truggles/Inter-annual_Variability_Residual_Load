@@ -160,6 +160,15 @@ def plot_matrix_thresholds(region, plot_base, mx_ary, solar_values, wind_values,
     css = []
     cnt = 0
     for matrix, title in zip(mx_ary, titles):
+
+        tmp = pd.DataFrame(matrix)
+        cols = list(tmp.columns)
+        tmp.columns = [f'pct_wind_{col}' for col in cols]
+        idxs = list(tmp.index)
+        tmp.index = [f'pct_solar_{idx}' for idx in idxs]
+        
+        tmp.to_csv(f"fig_data/{save_name.replace('top_10_','').replace('_ALL','')}_{title}.csv")
+
         if len(min_and_max) == 0:
             im = axs[cnt].imshow(matrix, interpolation='none', origin='lower', cmap=cmapShort)
         else:
@@ -506,13 +515,13 @@ if region == 'ALL':
 ms = OrderedDict() # Matrices
 ms['RL_mean'] = OrderedDict()
 ms['RL_max'] = OrderedDict()
-ms['RL_mean_max'] = OrderedDict()
-ms['RL_bias'] = OrderedDict()
+#ms['RL_mean_max'] = OrderedDict()
+#ms['RL_bias'] = OrderedDict()
 ms['wind_mean'] = OrderedDict()
 ms['solar_mean'] = OrderedDict()
 ms['inter'] = OrderedDict()
-ms['RL_mu_100pct'] = OrderedDict()
-ms['RL_miss'] = OrderedDict()
+#ms['RL_mu_100pct'] = OrderedDict()
+#ms['RL_miss'] = OrderedDict()
 
 for name, info in mapper.items():
     print(name, info)
@@ -578,13 +587,13 @@ for name, info in mapper.items():
 
     ms['inter'][name] = np.array(inter)
     ms['RL_mean'][name] = np.array(m_rl_mean)
-    ms['RL_mean_max'][name] = np.array(m_rl_mean_max)
+    #ms['RL_mean_max'][name] = np.array(m_rl_mean_max)
     ms['RL_max'][name] = np.array(m_rl_max)
-    ms['RL_bias'][name] = np.array(m_rl_mean) - np.array(m_rl_max)
+    #ms['RL_bias'][name] = np.array(m_rl_mean) - np.array(m_rl_max)
     ms['solar_mean'][name] = np.array(m_s_mean)
     ms['wind_mean'][name] = np.array(m_w_mean)
-    ms['RL_mu_100pct'][name] = np.array(m_rl_100pct)
-    ms['RL_miss'][name] = ms['RL_max'][name] - ms['RL_mean_max'][name] - ms['inter'][name] * 2
+    #ms['RL_mu_100pct'][name] = np.array(m_rl_100pct)
+    #ms['RL_miss'][name] = ms['RL_max'][name] - ms['RL_mean_max'][name] - ms['inter'][name] * 2
     print("With zero wind and zero solar:")
     for key in ms.keys():
         print(f" --- {key}: {round(ms[key][name][0][0],2)}")

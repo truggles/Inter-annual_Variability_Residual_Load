@@ -1,3 +1,25 @@
+# This script contains commands to run the main analysis below the
+# "Running default methods" block. Uncomment the code and run.
+# Plotting will happen based on the code at the very end of this script
+# in the "Plotting" block
+
+
+###############################
+### Running default methods ###
+###############################
+DATE="20210520v2"
+HOURS=10
+YEARS=10
+DEM_METHOD="DT"
+RES_METHOD="NOM"
+for REGION in "ERCOT" "NYISO" "PJM" "FR"; do
+    #for HOURS in 1 5 10; do
+    for HOURS in 10; do
+        python run_main_analysis.py ${REGION} ${DATE}${DEM_METHOD}${RES_METHOD} ${DEM_METHOD} ${RES_METHOD} ${HOURS} ${YEARS} &
+    done
+done
+
+
 
 
 ############################
@@ -51,27 +73,10 @@
 #done
 
 
-###############################
-### Running default methods ###
-###############################
-DATE="20210520v2"
-HOURS=10
-YEARS=10
-DEM_METHOD="DT"
-RES_METHOD="NOM"
-#for REGION in "ERCOT" "NYISO" "PJM" "FR"; do
-#    #for HOURS in 1 5 10; do
-#    for HOURS in 10; do
-#        python run_main_analysis.py ${REGION} ${DATE}${DEM_METHOD}${RES_METHOD} ${DEM_METHOD} ${RES_METHOD} ${HOURS} ${YEARS} &
-#    done
-#done
-
-
-
 ############################
 ### Plotting             ###
 ############################
-#DATE="20210127v1"
+#DATE="20210520v2"
 #HOURS=10
 #YEARS=10
 ##for REGION in "ERCOT" "NYISO" "PJM" "FR"; do
