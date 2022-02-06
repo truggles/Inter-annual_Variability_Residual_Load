@@ -1,7 +1,9 @@
 # Inter-annual_Variability_Residual_Load
 Collecting code used in paper on inter-annual variability of peak residual load:
 
-Please cite: XXX
+Please cite: 
+
+Tyler H. Ruggles and Ken Caldeira, Wind and solar generation may reduce the inter-annual variability of peak residual load in certain electricity systems, Applied Energy, (2022) https://doi.org/10.1016/j.apenergy.2021.117773.
 
 ## Structure
 
